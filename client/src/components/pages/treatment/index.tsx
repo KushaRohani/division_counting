@@ -30,12 +30,23 @@ const Treatment: React.FC<TreatmentProps> = ({
   accuracyRef,
   onFinish,
 }) => {
+  // Randomize order of the two groups once on mount
+  const [orderedSteps, setOrderedSteps] = useState<TreatmentStep[]>([])
+  useEffect(() => {
+    if (steps.length === 2) {
+      const copy = [...steps]
+      if (Math.random() < 0.5) copy.reverse()
+      setOrderedSteps(copy)
+    } else {
+      setOrderedSteps(steps)
+    }
+  }, [steps])
+
   const [stepIndex, setStepIndex] = useState(0)
   const [phase, setPhase] = useState<'explain' | 'train' | 'experiment'>(
     'explain'
   )
   const [trainingPool, setTrainingPool] = useState<QuestionItem[]>([])
-  const current = steps[stepIndex]
 
   // load both raw & LaTeX training items once
   useEffect(() => {
@@ -53,7 +64,7 @@ const Treatment: React.FC<TreatmentProps> = ({
       experimentDataRef.current = []
       setPhase('experiment')
     } else {
-      if (stepIndex < steps.length - 1) {
+      if (stepIndex < orderedSteps.length - 1) {
         setStepIndex(i => i + 1)
         setPhase('explain')
       } else {
@@ -61,6 +72,13 @@ const Treatment: React.FC<TreatmentProps> = ({
       }
     }
   }
+
+  // If we haven't yet set orderedSteps, show loading
+  if (orderedSteps.length === 0) {
+    return <div className="text-center p-8 text-white">Loading…</div>
+  }
+
+  const current = orderedSteps[stepIndex]
 
   if (phase === 'explain') {
     return <current.ExplainComponent onNext={handleNext} />
