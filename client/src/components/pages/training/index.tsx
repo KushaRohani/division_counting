@@ -1,88 +1,85 @@
 // src/components/pages/TrainingPage.tsx
 import React, { useState, useEffect, useCallback } from 'react'
-import { PageKey, PAGES } from '../../../App'
-import { getQuestions, countXDivisions, toLatexSimple } from '../../ultilities/questionsTemplates'
-import { KeyboardDisplay } from '../../ultilities/keyboard'
-import { AssignmentScreen } from './components/AssigmentScreen'
-
-// import KaTeX renderer
 import { BlockMath } from 'react-katex'
 import 'katex/dist/katex.min.css'
+import { AssignmentScreen } from './components/AssigmentScreen'
+import type { QuestionItem } from '../../ultilities/questionsTemplates'
+import { trainingBank } from '../../ultilities/questionsTemplates'
 
-const TrainingPage: React.FC<{ setPage: (page: PageKey) => void }> = ({ setPage }) => {
-  const [questions, setQuestions] = useState<string[]>([])
-  useEffect(() => {
-    setQuestions(() => {
-      const qs: string[] = []
-      for (let i = 4; i < 14; i++) qs.push(getQuestions(i))
-      return qs
-    })
-  }, [])
+interface TrainingPageProps {
+  setPage: () => void
+  trainingQuestions: QuestionItem[]
+}
+
+const TrainingPage: React.FC<TrainingPageProps> = ({
+  setPage,
+  trainingQuestions,
+}) => {
+  const questions = trainingQuestions
+  const total = questions.length
 
   const [started, setStarted] = useState(false)
   const [idx, setIdx] = useState(0)
-  const [typed, setTyped] = useState('')
-  const [attempted, setAttempted] = useState(false)
+  const [typed, setTyped] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
 
-  // new: decide per-question whether to render as LaTeX
-  const [useLatex, setUseLatex] = useState(false)
-  useEffect(() => {
-    setUseLatex(Math.random() < 0.5)
-  }, [idx])
+  const current = questions[idx]
+  const answerKey = current.id.slice(2)
+  const correctAnswer = parseInt(
+    trainingBank.answers[answerKey as keyof typeof trainingBank.answers],
+    10
+  )
+  const userAns = typed === null ? null : parseInt(typed, 10)
+  const isCorrect = userAns === correctAnswer
 
   const handleKey = useCallback(
     (token: string) => {
-      if (token === 'DELETE') setTyped((t) => t.slice(0, -1))
-      else if (token === 'ENTER') {
-        if (!showFeedback) {
-          if (typed === '') {
-            setAttempted(true)
-            return
-          }
-          setShowFeedback(true)
+      if (!['1', '2', '3', '4'].includes(token)) return
+      if (!started) return
+
+      // first press: select answer
+      if (typed === null) {
+        setTyped(token)
+        return
+      }
+
+      // second press same key: submit and show feedback
+      if (!showFeedback && typed === token) {
+        setShowFeedback(true)
+        return
+      }
+
+      // if they change their mind before confirming, allow new selection
+      if (!showFeedback && typed !== token) {
+        setTyped(token)
+        return
+      }
+
+      // after feedback: any press moves to next
+      if (showFeedback) {
+        if (idx < total - 1) {
+          setIdx(i => i + 1)
+          setTyped(null)
+          setShowFeedback(false)
         } else {
-          if (idx < questions.length - 1) {
-            setIdx((i) => i + 1)
-            setTyped('')
-            setAttempted(false)
-            setShowFeedback(false)
-          } else {
-            setPage(PAGES.experiment)
-          }
+          setPage()
         }
-      } else if (/[0-9]/.test(token)) {
-        if (!showFeedback && typed.length < 2) setTyped((t) => t + token)
       }
     },
-    [idx, questions.length, typed, showFeedback, setPage]
+    [started, typed, showFeedback, idx, total, setPage]
   )
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleKey('ENTER')
-        return
-      }
-      if (showFeedback) return
-      if (/[0-9]/.test(e.key)) handleKey(e.key)
-      else if (e.key === 'Backspace') handleKey('DELETE')
+      handleKey(e.key)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [handleKey, showFeedback])
+  }, [handleKey])
 
-  if (!questions.length) return <div className="text-center p-8 text-white">Loading…</div>
-
-  // raw vs LaTeX
-  const raw = questions[idx]
-  const latex = toLatexSimple(raw)
-  const display = useLatex ? latex : raw
-
-  // correct answer stays based on raw
-  const correctAnswer = countXDivisions(raw)
-  const userAnswer = parseInt(typed, 10)
-  const isCorrect = userAnswer === correctAnswer
+  if (questions.length === 0) {
+    return <div className="text-center p-8 text-white">Loading…</div>
+  }
 
   if (!started) {
     return (
@@ -94,67 +91,45 @@ const TrainingPage: React.FC<{ setPage: (page: PageKey) => void }> = ({ setPage 
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10 text-white">
-      <h1 className="text-4xl font-extrabold mb-4">Training</h1>
+      <h1 className="text-4xl font-extrabold mb-4">Practice</h1>
+      <p className="mb-2">
+        Question {idx + 1}/{total}
+      </p>
+
+      <p>
+        <span className="text-lg font-semibold">What is the result of:</span>
+      </p>
+
+      <div className="bg-gray-800 p-4 rounded mb-6 max-w-xl w-full text-center">
+        {current.id.startsWith('02') ? (
+          <BlockMath math={current.text} />
+        ) : (
+          <code className="text-xl">{current.text}</code>
+        )}
+      </div>
 
       {!showFeedback ? (
-        <>
-          <p className="mb-1">Question {idx + 1}/{questions.length}</p>
-
-          <div className="bg-gray-800 p-4 rounded mb-4 max-w-xl w-full whitespace-pre-wrap">
-            {useLatex ? (
-              <BlockMath math={display} />
-            ) : (
-              <code>{display}</code>
-            )}
-          </div>
-
-          <div className="mb-4 w-full max-w-xl">
-            <div className="p-2 bg-gray-900 border border-gray-700 rounded min-h-[3rem] font-mono">
-              {typed || <span className="text-gray-500">Type your answer…</span>}
-            </div>
-            {attempted && <p className="text-red-500 mt-2">Please enter a response.</p>}
-          </div>
-
-          <KeyboardDisplay onKey={handleKey} />
-        </>
+        typed === null ? (
+          <p className="mb-4">
+            Press <strong>1</strong>–<strong>4</strong> to select your answer, then press it again to submit.
+          </p>
+        ) : (
+          <p className="mb-4">
+            You selected <strong>{typed}</strong>. Press <strong>{typed}</strong> again to submit.
+          </p>
+        )
       ) : (
-        <div className="bg-gray-800 p-6 rounded max-w-xl w-full space-y-4">
-          <h2 className="text-xl mb-2">Feedback</h2>
-
-          <div>
-            <p className="text-sm text-gray-400 mb-1">Original expression:</p>
-            <div className="bg-gray-700 p-2 rounded whitespace-pre-wrap">
-              {useLatex ? (
-                <BlockMath math={display} />
-              ) : (
-                <pre className="whitespace-pre-wrap break-words font-mono">{display}</pre>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm text-gray-400">Your answer:</p>
-              <span className={`px-3 py-1 font-bold text-lg rounded ${
-                isCorrect ? 'bg-green-600' : 'bg-red-600'
-              }`}>
-                {isNaN(userAnswer) ? 'Invalid' : userAnswer}
-              </span>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Correct answer:</p>
-              <span className="px-3 py-1 inline-block rounded bg-blue-600 font-bold text-lg">
-                {correctAnswer}
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={() => handleKey('ENTER')}
-            className="w-full mt-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow"
-          >
-            Continue
-          </button>
+        <div className="mb-4">
+          {isCorrect ? (
+            <p className="text-green-400 font-semibold text-lg">Correct!</p>
+          ) : (
+            <p className="text-red-400 font-semibold text-lg">
+              Incorrect; the right answer was <strong>{correctAnswer}</strong>.
+            </p>
+          )}
+          <p className="mt-2 text-sm text-gray-400">
+            Press any key (1–4) to continue.
+          </p>
         </div>
       )}
     </div>

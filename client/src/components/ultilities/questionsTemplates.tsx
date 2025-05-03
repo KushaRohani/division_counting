@@ -1,247 +1,174 @@
-
-
-export enum GroupEnum {
-  string = 0,
-  latex  = 1,
+export interface QuestionItem {
+  id: string;
+  text: string;
 }
 
-// KUSHA SHIT
+export const QuestionBank = {
+  questions: {
+    "01": "(2+(((8/2)+2))/2)/5",
+    "02": "(6/(5-3))/((7+2)/3)",
+    "03": "(10/(4-(6/3)))-(8/2)",
+    "04": "3-((12/((7+2)/3))/2)",
+    "05": "(5-3)/(6/((11-5)/2))",
 
-export const BinaryExpression = {
-  DIV: "/",
-  PLUS: "+",
-  MINUS: "-",
-  MULTIPLY: "*",
+    "06": "(3+(((6/2)+1))/4)/2",
+    "07": "((6/2)+5)/(4/(6-5))",
+    "08": "(12/(7-(10/2)))-(12/3)",
+    "09": "8-((12/(4/2))/(2-1))",
+    "10": "(3+5)/(8/((7-3)/2))",
+
+    "11": "(5+((5-(8/4))/3)/2)",
+    "12": "(2+(14/2))/((4+2)/2)",
+    "13": "(10/(8/(9-5)))-(6/3)",
+    "14": "7-(12/((6/2)/(4-3)))",
+    "15": "(12+3)/(10/((9-3)/3))",
+
+    "16": "(4+(((6/2)+5))/2)/2",
+    "17": "(16/(6-4))/((8-2)/3)",
+    "18": "(12/(8/2))+(8/(3+5))",
+    "19": "10-((12/(6/3))/(3-2))",
+    "20": "(5+11)/(8/((6-2)/2))"
+  },
+  answers: {
+    "01": "1",
+    "02": "1",
+    "03": "1",
+    "04": "1",
+    "05": "1",
+
+    "06": "2",
+    "07": "2",
+    "08": "2",
+    "09": "2",
+    "10": "2",
+
+    "11": "3",
+    "12": "3",
+    "13": "3",
+    "14": "3",
+    "15": "3",
+
+    "16": "4",
+    "17": "4",
+    "18": "4",
+    "19": "4",
+    "20": "4",
+  },
 }
 
-
-export const getQuestions = (totalDivisions: number) => {
-  return DivisorWithX(totalDivisions)
+export const trainingBank = {
+  questions: {
+    "01": "1+3",
+    "02": "7-5",
+    "03": "6/2",
+    "04": "(2+6)/8",
+    "05": "(5+(4+(3+(2+1))))-14",
+    "06": "(12/(6/(2+1)))-4",
+    "07": "8-5",
+    "08": "(2+2)/2",
+    "09": "(2+6)/(7-5)",
+    "10": "(18-9)/(12/(8/2))",
+  },
+  answers: {
+    "01": "4",
+    "02": "2",
+    "03": "3",
+    "04": "1",
+    "05": "1",
+    "06": "2",
+    "07": "3",
+    "08": "2",
+    "09": "4",
+    "10": "3",
+  },
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  return [...arr].sort(() => Math.random() - 0.5)
+}
 
-const DivisorWithX = (TotalDivisions: number) => {
-  
-  const XFirst: boolean = Math.floor(Math.random() * 2) == 0; // Random number between (0,1) inclusive. Use to randomly choose between true or false
-  if (TotalDivisions == 1) {  // if total divisions is 1, return one division with x either on top or bottom.
-    if (XFirst) {
-      return "( x / b )"; 
+export function toLatexSimple(input: string): string {
+  let s = input.trim()
+  while (s.includes('/')) {
+    const idx = s.indexOf('/')
+    let i = idx - 1
+    while (i >= 0 && s[i] === ' ') i--
+    let Lstart = i
+    if (s[i] === ')') {
+      let depth = 1; i--
+      while (i >= 0 && depth) {
+        if (s[i] === ')') depth++
+        else if (s[i] === '(') depth--
+        i--
+      }
+      Lstart = i + 1
     } else {
-      return "( a / x )"; 
+      while (i >= 0 && /[A-Za-z0-9]/.test(s[i])) i--
+      Lstart = i + 1
     }
-    
-  } else if (TotalDivisions == 0) {
-    return "x"
-  } // If the total divisions is 0, return a.
-
-
-  const m: number = Math.floor(Math.random() * (TotalDivisions - 1)) + 1; // Random number between (0,totalDivisions) not inclusive.
-  
-  
-  const expressions = Object.values(BinaryExpression);
-  const randomIndex = Math.floor(Math.random() * expressions.length);
-  const randomExpression = expressions[randomIndex]; // Randomly choose an expression from the BinaryExpression object.
-  
-  if (randomExpression == BinaryExpression.DIV) {
-    TotalDivisions = TotalDivisions - 1; // If the expression is division, we need to subtract 1 from the total divisions to avoid division by zero.
+    const Lend = idx
+    i = idx + 1
+    while (i < s.length && s[i] === ' ') i++
+    let Rend = i
+    if (s[Rend] === '(') {
+      let depth = 1; Rend++
+      while (Rend < s.length && depth) {
+        if (s[Rend] === '(') depth++
+        else if (s[Rend] === ')') depth--
+        Rend++
+      }
+    } else {
+      while (Rend < s.length && /[A-Za-z0-9]/.test(s[Rend])) Rend++
+    }
+    const L = s.slice(Lstart, Lend).trim()
+    const R = s.slice(i, Rend).trim()
+    s = s.slice(0, Lstart) + `\\frac{${L}}{${R}}` + s.slice(Rend)
   }
-
-  const n: number = TotalDivisions - m; // The other number to make the total divisions.
-
-  let leftSide: string = ""; // The left side of the expression.
-  let rightSide: string = ""; // The right side of the expression.
-
-  if (XFirst) {
-    leftSide = DivisorWithX(m) 
-    rightSide = DivisorWithoutX(n)
-  } else {
-    leftSide = DivisorWithoutX(n)
-    rightSide = DivisorWithX(m) 
-  }
-
-  if (randomExpression == BinaryExpression.DIV) {
-    leftSide = "( " + leftSide; // If the expression is division, we need to add parentheses to the left side.
-    rightSide = rightSide + " )"; // Add parentheses to the right side.
-  }
-
-
-  return leftSide + " " + randomExpression + " " + rightSide; // Return the expression.
+  return s.replace(/\*/g, '\\cdot ')
 }
 
-const DivisorWithoutX = (TotalDivisions: number) => {
-  
-  if (TotalDivisions == 1) {
-    return "( a / b )"; // If the total divisions is 1, return 1.
-  } else if (TotalDivisions == 0) {
-    return "a"
-  } // If the total divisions is 0, return a.
+export async function fetchQuestionItems(): Promise<QuestionItem[]> {
+  const questionKeys = Object.keys(QuestionBank.questions)
 
+  const shuffledRaw = shuffle(questionKeys)
+  const shuffledLatex = shuffle(questionKeys)
 
-  const m: number = Math.floor(Math.random() * (TotalDivisions - 1)) + 1; // Random number between (0,totalDivisions) not inclusive.
-  
-  const expressions = Object.values(BinaryExpression);
-  const randomIndex = Math.floor(Math.random() * expressions.length);
-  const randomExpression = expressions[randomIndex]; // Randomly choose an expression from the BinaryExpression object.
-  
-  if (randomExpression == BinaryExpression.DIV) {
-    TotalDivisions = TotalDivisions - 1; // If the expression is division, we need to subtract 1 from the total divisions to avoid division by zero.
-  }
+  const rawItems = shuffledRaw.map((key) => ({
+    id: `01${key.padStart(2, '0')}`,
+    text: QuestionBank.questions[key as keyof typeof QuestionBank.questions],
+  }))
 
-  const n: number = TotalDivisions - m; // The other number to make the total divisions.
+  const latexItems = shuffledLatex.map((key) => ({
+    id: `02${key.padStart(2, '0')}`,
+    text: toLatexSimple(
+      QuestionBank.questions[key as keyof typeof QuestionBank.questions]
+    ),
+  }))
 
-  let leftSide: string = DivisorWithoutX(m); // The left side of the expression.
-  let rightSide: string = DivisorWithoutX(n); // The right side of the expression.
-
-  if (randomExpression == BinaryExpression.DIV) {
-    leftSide = "( " + leftSide; // If the expression is division, we need to add parentheses to the left side.
-    rightSide = rightSide + " )"; // Add parentheses to the right side.
-  }
-  
-
-  return leftSide + " " + randomExpression + " " + rightSide; // Return the expression.
-}
-
-
-export function countXDivisions(expr: string): number {
-  // tokenize into identifiers, parens and operators
-  const tokens = expr.match(/[A-Za-z]+|[()+\-*/]/g)!;
-
-
-  let pos = 0;
-  const peek = () => tokens[pos];
-  const consume = (expect?: string) => {
-    const tok = tokens[pos++];
-    if (expect && tok !== expect) {
-      throw new Error(`Expected '${expect}' but got '${tok}'`);
-    }
-    return tok;
-  };
-
-  type Node =
-    | { type: 'id'; name: string }
-    | { type: 'op'; op: string; left: Node; right: Node };
-
-  // Grammar:
-  // Expr → Term (('+'|'-') Term)*
-  // Term → Factor (('*'|'/') Factor)*
-  // Factor → Identifier | '(' Expr ')'
-  function parseExpr(): Node {
-    let node = parseTerm();
-    while (peek() === '+' || peek() === '-') {
-      const op = consume()!;
-      node = { type: 'op', op, left: node, right: parseTerm() };
-    }
-    return node;
-  }
-
-  function parseTerm(): Node {
-    let node = parseFactor();
-    while (peek() === '*' || peek() === '/') {
-      const op = consume()!;
-      node = { type: 'op', op, left: node, right: parseFactor() };
-    }
-    return node;
-  }
-
-  function parseFactor(): Node {
-    if (peek() === '(') {
-      consume('(');
-      const node = parseExpr();
-      consume(')');
-      return node;
-    }
-    // identifier
-    const name = consume()!;
-    return { type: 'id', name };
-  }
-
-  const ast = parseExpr();
-
-  // does this subtree contain an 'x' anywhere?
-  function containsX(n: Node): boolean {
-    if (n.type === 'id') return n.name === 'x';
-    return containsX(n.left) || containsX(n.right);
-  }
-
-  // count every '/' whose LEFT subtree contains an 'x'
-  function walk(n: Node): number {
-    if (n.type === 'id') return 0;
-    let cnt = 0;
-    if (n.op === '/' && containsX(n.left)) cnt++;
-    cnt += walk(n.left) + walk(n.right);
-    return cnt;
-  }
-
-  return walk(ast);
+  return [...rawItems, ...latexItems]
 }
 
 /**
- * Convert every “a / b” (with nesting) into \frac{a}{b}, then “*” → “\cdot”.
+ * Getter for training questions—returns the same set twice:
+ * once as raw strings and once converted to LaTeX.
  */
-export function toLatexSimple(input: string): string {
-  let s = input.trim();
+export async function fetchTrainingItems(): Promise<QuestionItem[]> {
+  const keys = Object.keys(trainingBank.questions)
 
-  // Keep looping until there are no arithmetic slashes left
-  while (s.includes('/')) {
-    const slashIdx = s.indexOf('/');
+  const shuffledRaw = shuffle(keys)
+  const shuffledLatex = shuffle(keys)
 
-    // 1) Find left operand [Lstart…Lend)
-    let i = slashIdx - 1;
-    while (i >= 0 && s[i] === ' ') i--;
-    let Lend = i + 1, Lstart: number;
-    if (s[i] === ')') {
-      // match balanced parens
-      let depth = 1; i--;
-      while (i >= 0 && depth > 0) {
-        if (s[i] === ')') depth++;
-        else if (s[i] === '(') depth--;
-        i--;
-      }
-      Lstart = i + 1;
-    } else if (s[i] === '}') {
-      // match balanced braces, and include preceding “\frac” if present
-      let depth = 1; i--;
-      while (i >= 0 && depth > 0) {
-        if (s[i] === '}') depth++;
-        else if (s[i] === '{') depth--;
-        i--;
-      }
-      // check for “\frac” just before
-      if (s.slice(i - 4 + 1, i + 1) === '\\frac') {
-        Lstart = i - 4 + 1;
-      } else {
-        Lstart = i + 1;
-      }
-    } else {
-      // bare var/number
-      while (i >= 0 && /[A-Za-z0-9]/.test(s[i])) i--;
-      Lstart = i + 1;
-    }
+  const rawItems = shuffledRaw.map((key) => ({
+    id: `01${key.padStart(2, '0')}`,
+    text: trainingBank.questions[key as keyof typeof trainingBank.questions],
+  }))
 
-    // 2) Find right operand (Rstart…Rend)
-    i = slashIdx + 1;
-    while (i < s.length && s[i] === ' ') i++;
-    let Rstart = i, Rend: number;
-    if (s[i] === '(') {
-      let depth = 1; i++;
-      while (i < s.length && depth > 0) {
-        if (s[i] === '(') depth++;
-        else if (s[i] === ')') depth--;
-        i++;
-      }
-      Rend = i;
-    } else {
-      while (i < s.length && /[A-Za-z0-9]/.test(s[i])) i++;
-      Rend = i;
-    }
+  const latexItems = shuffledLatex.map((key) => ({
+    id: `02${key.padStart(2, '0')}`,
+    text: toLatexSimple(
+      trainingBank.questions[key as keyof typeof trainingBank.questions]
+    ),
+  }))
 
-    // 3) Splice in the \frac{L}{R}
-    const L = s.slice(Lstart, Lend).trim();
-    const R = s.slice(Rstart, Rend).trim();
-    const frac = `\\frac{${L}}{${R}}`;
-    s = s.slice(0, Lstart) + frac + s.slice(Rend);
-  }
-
-  // 4) Finally swap * → \cdot
-  return s.replace(/\*/g, '\\cdot ');
+  return [...rawItems, ...latexItems]
 }

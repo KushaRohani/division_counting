@@ -4,6 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/RCT_StringConcat_Webapp/',
+  base: '/division_counting/',
   plugins: [react(), tailwindcss(),],
 })

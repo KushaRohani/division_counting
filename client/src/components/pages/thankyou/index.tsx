@@ -1,4 +1,43 @@
-const ThankYouPage = () => {
+// src/components/pages/thankyou.tsx
+import React, { useEffect } from 'react'
+import axios from 'axios'
+import type { SurveyData } from '../../../App'
+
+const apiUrl = import.meta.env.VITE_API_URL
+
+interface ThankYouPageProps {
+  surveyData: SurveyData & {
+    ids: string[]
+    test_accuracy: boolean[]
+    durations: number[]
+    totalTime: number
+    overallAccuracy: number
+  }
+  setPage: () => void
+}
+
+const ThankYouPage: React.FC<ThankYouPageProps> = ({
+  surveyData,
+  setPage,
+}) => {
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const {
+          test_accuracy,
+          ...rest /* yearsProgramming, age, sex, language, email, ids, durations, totalTime, overallAccuracy */
+        } = surveyData
+
+        await axios.post(`${apiUrl}/kusha`, {
+          ...rest,
+          task_accuracy: test_accuracy,
+        })
+      } catch (error) {
+        console.error('Submit error', error)
+      }
+    })()
+  }, [surveyData])
+
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10">
       <h1 className="text-4xl font-extrabold text-white text-center mb-6">
@@ -10,7 +49,7 @@ const ThankYouPage = () => {
         Your input is valuable and helps us better understand how people interpret special character syntax in programming.
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default ThankYouPage;
+export default ThankYouPage

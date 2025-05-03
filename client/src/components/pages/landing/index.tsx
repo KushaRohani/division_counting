@@ -2,7 +2,7 @@ import React from 'react';
 import { Sparkles } from 'lucide-react'; // optional — replace or remove if not using Lucide
 
 interface LandingPageProps {
-  setPage: (page: 'landing' | 'info' | "explain") => void;
+  setPage: (page: 'landing' | 'info') => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ setPage }) => {
@@ -24,7 +24,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ setPage }) => {
       </p>
 
       <button
-        onClick={() => setPage('explain')}
+        onClick={() => setPage('info')}
         className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded shadow-md transition-all"
       >
         Next
