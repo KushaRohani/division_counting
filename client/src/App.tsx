@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import CenteredPaper from './components/paper'
 import LandingPage from './components/pages/landing'
 import InfoPage from './components/pages/information'
@@ -9,7 +9,7 @@ import ThankYouPage from './components/pages/thankyou'
 import { ProgrammingLanguage } from '../../shared/languageOptions'
 import ExplainNewline from "./components/pages/explain/explainNewLine"
 import ExplainTab from "./components/pages/explain/explainTab"
-import { fetchQuestionItems, QuestionItem } from './components/ultilities/questionsTemplates'
+import { fetchQuestionItems } from './components/ultilities/questionsTemplates'
 
 export const PAGES = {
   landing: 'landing',

@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+// src/components/pages/experiment/components/questionScreen.tsx
+import React, { useEffect, useCallback } from 'react'
+import { BlockMath } from 'react-katex'
+import 'katex/dist/katex.min.css'
 import { KeyboardDisplay } from '../../../ultilities/keyboard'
-import {
-  groups,
-  GroupKey,
-  QuestionItem,
-  SyntaxConfig,
-} from '../../../ultilities/questionsTemplates'
+import type { QuestionItem } from '../../../ultilities/questionsTemplates'
 
 export interface QuestionProps {
   question: QuestionItem
@@ -28,116 +26,66 @@ const QuestionScreen: React.FC<QuestionProps> = ({
   attemptedSubmit,
   submitted,
 }) => {
-  if (!question) return null
-
-  const [tokens, setTokens] = useState<string[]>([])
-
+  // Clear the input whenever the question changes
   useEffect(() => {
-    setTokens([])
-  }, [question.id])
-
-  const [groupKey, syntaxText] = useMemo<[GroupKey | null, string | null]>(() => {
-    const gid = question.id.slice(0, 2)
-    const sid = question.id.slice(4, 6)
-    let g: GroupKey | null = null
-    for (const k of Object.keys(groups) as GroupKey[]) {
-      if (groups[k].groupId === gid) {
-        g = k
-        break
-      }
-    }
-
-    if (!g) return [null, null]
-    const entry = groups[g].syntaxes.find((s) => s.id === sid)
-    return [g, entry?.text || null]
-  }, [question.id])
+    onChange('')
+  }, [question.id, onChange])
 
   const handleKey = useCallback(
     (tok: string) => {
       if (submitted) return
-
       if (tok === 'DELETE') {
-        setTokens((prev) => {
-          const next = prev.slice(0, -1)
-          onChange(next.join(''))
-          return next
-        })
-      } else if (tok === 'ENTER') {
-        onNext()
-      } else if (['1', '2', '3', '4'].includes(tok) && tokens.length === 0) {
-        setTokens([tok])
-        onChange(tok)
+        onChange('')
+      } else if (['1', '2', '3', '4'].includes(tok)) {
+        if (!input) {
+          onChange(tok)
+        } else if (input === tok) {
+          onNext()
+        } else {
+          onChange(tok)
+        }
       }
     },
-    [submitted, onChange, onNext, tokens.length]
+    [submitted, input, onChange, onNext]
   )
 
+  // Listen for keyboard events
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (['1', '2', '3', '4'].includes(e.key)) handleKey(e.key)
-      else if (e.key === 'Enter') handleKey('ENTER')
       else if (e.key === 'Backspace') handleKey('DELETE')
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [handleKey])
 
-  const rendered = useMemo(() => {
-    if (syntaxText === '\n') {
-      return question.text.split('\n').map((line, i) => (
-        <React.Fragment key={i}>
-          {line}
-          <br />
-        </React.Fragment>
-      ))
-    }
-    if (syntaxText === '\t') {
-      return question.text.split('\t').map((part, i) => (
-        <React.Fragment key={i}>
-          {part}
-          {'\u00A0\u00A0\u00A0\u00A0'}
-        </React.Fragment>
-      ))
-    }
-    return question.text
-  }, [question.text, syntaxText])
-
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10 text-white">
-      <h1 className="text-4xl font-extrabold text-center mb-4">
-        Experiment
-      </h1>
+      <h1 className="text-4xl font-extrabold text-center mb-4">Experiment</h1>
 
       <p className="mb-1 text-center">
         Question {current + 1}/{total} — ID <code>{question.id}</code>
       </p>
 
-      <h2 className="text-2xl text-white font-bold mb-2 mt-4 text-center">
-        {groupKey === 'newline' ? 'Newline syntax is:' : 'Tab syntax is:'}
-      </h2>
-      <div className="text-center text-white mb-4">
-        <code className="text-xl bg-gray-800 px-3 py-2 rounded inline-block">
-          {groupKey === 'newline' && syntaxText === '\n'
-            ? '↵ (newline)'
-            : groupKey === 'tab' && syntaxText === '\t'
-            ? '→ (tab)'
-            : syntaxText}
-        </code>
-      </div>
-
-      <div className="bg-gray-800 text-white px-4 py-3 rounded max-w-xl w-full mb-6 border border-gray-700 whitespace-pre-wrap">
-        <code>{rendered}</code>
+      <div className="bg-gray-800 p-4 rounded mb-6 max-w-xl w-full text-center">
+        {question.id.startsWith('02') ? (
+          <BlockMath math={question.text} />
+        ) : (
+          <code className="text-xl">{question.text}</code>
+        )}
       </div>
 
       <div className="mb-4 p-2 border border-gray-600 rounded min-h-[4rem] font-mono whitespace-pre-wrap bg-gray-800 text-white max-w-xl w-full">
-        {input || <span className="text-gray-500">Type your answer...</span>}
+        {input || <span className="text-gray-500">Press 1–4 to answer</span>}
         <span className="inline-block w-1 h-6 bg-white animate-pulse align-bottom ml-1" />
       </div>
 
       <KeyboardDisplay onKey={handleKey} />
 
-      {attemptedSubmit && input === '' && (
-        <p className="text-red-500 mt-2 text-center">Please enter a response.</p>
+      {attemptedSubmit && input === '' && !submitted && (
+        <p className="text-red-500 mt-2 text-center">
+          Please enter a response.
+        </p>
       )}
     </div>
   )
