@@ -1,27 +1,29 @@
-// src/components/pages/explain/ExplainNewline.tsx
+// src/components/pages/explain/ExplainBar.tsx
 import React from 'react'
-
-interface ExplainNewlineProps {
+import { BlockMath } from 'react-katex'
+interface ExplainBarProps {
   onNext: () => void
 }
 
-const ExplainNewline: React.FC<ExplainNewlineProps> = ({ onNext }) => {
+const ExplainBar: React.FC<ExplainBarProps> = ({ onNext }) => {
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10">
       <h1 className="text-4xl font-extrabold text-white mb-4">
-        Newline Syntax Explanation
+        Bar division Explanation
       </h1>
 
       <p className="text-white text-md text-center max-w-xl mb-6">
-        In this experiment, whenever you see a newline character, it will be shown as an actual line break.
-        Treat each of those breaks as one newline.
+        In this experiment, you will treat \(a / b\) as 'a' being divided by 'b'.
+        As a reminder of some mathematical notation:
       </p>
 
       <div className="bg-gray-800 text-white px-4 py-3 rounded max-w-xl w-full mb-8 border border-gray-700 whitespace-pre-wrap">
         <code>
-          Line one{'\n'}
-          Line two{'\n'}
-          Line three
+          + is the addition operator, ex. <BlockMath>1 + 2 = 3</BlockMath>
+          <br />
+          - is the subtraction operator, ex. <BlockMath>3 - 2 = 1</BlockMath>
+          <br />
+          / is the division operator, ex. <BlockMath>\frac{4}{2} = 2</BlockMath>
         </code>
       </div>
 
@@ -35,4 +37,4 @@ const ExplainNewline: React.FC<ExplainNewlineProps> = ({ onNext }) => {
   )
 }
 
-export default ExplainNewline
+export default ExplainBar

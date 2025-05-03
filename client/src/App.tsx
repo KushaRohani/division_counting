@@ -7,8 +7,8 @@ import SurveyPage from './components/pages/survey'
 import Treatment, { TreatmentStep } from './components/pages/treatment'
 import ThankYouPage from './components/pages/thankyou'
 import { ProgrammingLanguage } from '../../shared/languageOptions'
-import ExplainNewline from "./components/pages/explain/explainNewLine"
-import ExplainTab from "./components/pages/explain/explainTab"
+import ExplainSlash from "./components/pages/explain/explainSlash"
+import ExplainBar from "./components/pages/explain/explainBar"
 import { fetchQuestionItems } from './components/ultilities/questionsTemplates'
 
 export const PAGES = {
@@ -59,11 +59,11 @@ function App() {
 
       setTreatments([
         {
-          ExplainComponent: ExplainNewline,
+          ExplainComponent: ExplainSlash,
           questions: rawItems,
         },
         {
-          ExplainComponent: ExplainTab,
+          ExplainComponent: ExplainBar,
           questions: latexItems,
         },
       ])

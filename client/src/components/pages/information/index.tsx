@@ -1,6 +1,6 @@
 // src/components/pages/information.tsx
 import React from 'react'
-
+import { BlockMath } from 'react-katex'
 interface InfoPageProps {
   setPage: () => void
   backPage: () => void
@@ -36,15 +36,11 @@ const InfoPage: React.FC<InfoPageProps> = ({ setPage, backPage }) => {
           </li>
           <li>
             <strong>LaTeX math:</strong> A rendered math expression like{' '}
-            <code>\((a / b) + (x / b)\)</code>
+            <BlockMath>(a / b) + (x / b)</BlockMath>
           </li>
         </ul>
         <p className="mb-4">
-          Your task is to evaluate each expression and then press one of the numeric keys{' '}
-          <strong>1</strong> through <strong>4</strong> to submit your answer.
-        </p>
-        <p>
-          Try to respond quickly and accurately—your response time and correctness will both be recorded.
+          Try your best on each question. If you don't know the answer, make your best guess and move on.
         </p>
       </div>
 
