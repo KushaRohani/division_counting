@@ -1,13 +1,12 @@
 // src/components/pages/information.tsx
 import React from 'react'
-import { BlockMath } from 'react-katex'
 interface InfoPageProps {
   setPage: () => void
   backPage: () => void
 }
 
 const InfoPage: React.FC<InfoPageProps> = ({ setPage, backPage }) => {
-  const latex = "(\\frac{a}{b}) + (\\frac{x}{b})"
+  
   return (
     <div className="flex flex-col h-full w-full items-center justify-between p-6">
       {/* Back button */}
