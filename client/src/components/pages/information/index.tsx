@@ -7,6 +7,7 @@ interface InfoPageProps {
 }
 
 const InfoPage: React.FC<InfoPageProps> = ({ setPage, backPage }) => {
+  const latex = "(\\frac{a}{b}) + (\\frac{x}{b})"
   return (
     <div className="flex flex-col h-full w-full items-center justify-between p-6">
       {/* Back button */}
@@ -27,18 +28,13 @@ const InfoPage: React.FC<InfoPageProps> = ({ setPage, backPage }) => {
       {/* Instructions */}
       <div className="max-w-2xl text-white text-md text-center leading-relaxed mb-8">
         <p className="mb-4">
-          You'll see a series of arithmetic expressions in one of two formats:
+          You'll see a series of arithmetic expressions in one of two formats.
         </p>
-        <ul className="list-disc list-inside mb-4 text-left mx-auto space-y-2">
-          <li>
-            <strong>Raw string:</strong> A plain-text expression like{' '}
-            <code>(a / b) + (x / b)</code>
-          </li>
-          <li>
-            <strong>LaTeX math:</strong> A rendered math expression like{' '}
-            <BlockMath>(a / b) + (x / b)</BlockMath>
-          </li>
-        </ul>
+    
+        <p className="mb-4">
+          Your task is to evaluate each expression and then press one of the numeric keys
+          <strong> 1</strong> through <strong>4</strong> on your keyboard once to select and again to confirm your answer.
+        </p>
         <p className="mb-4">
           Try your best on each question. If you don't know the answer, make your best guess and move on.
         </p>

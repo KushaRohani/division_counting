@@ -6,6 +6,8 @@ interface ExplainBarProps {
 }
 
 const ExplainBar: React.FC<ExplainBarProps> = ({ onNext }) => {
+  const latex = "\\frac{4}{2} = 2"
+  const latex2 = "(\\frac{a}{b})"
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10">
       <h1 className="text-4xl font-extrabold text-white mb-4">
@@ -13,7 +15,7 @@ const ExplainBar: React.FC<ExplainBarProps> = ({ onNext }) => {
       </h1>
 
       <p className="text-white text-md text-center max-w-xl mb-6">
-        In this experiment, you will treat \(a / b\) as 'a' being divided by 'b'.
+        In this experiment, you will treat <BlockMath>{latex2}</BlockMath> as 'a' being divided by 'b'.
         As a reminder of some mathematical notation:
       </p>
 
@@ -23,7 +25,7 @@ const ExplainBar: React.FC<ExplainBarProps> = ({ onNext }) => {
           <br />
           - is the subtraction operator, ex. <BlockMath>3 - 2 = 1</BlockMath>
           <br />
-          / is the division operator, ex. <BlockMath>\frac{4}{2} = 2</BlockMath>
+          / is the division operator, ex. <BlockMath>{latex}</BlockMath>
         </code>
       </div>
 

@@ -19,8 +19,8 @@ const ExplainSlash: React.FC<ExplainSlashProps> = ({ onNext }) => {
 
       <div className="bg-gray-800 text-white px-4 py-3 rounded max-w-xl w-full mb-8 border border-gray-700 whitespace-pre-wrap">
         <code>
-        + is the addition operator, ex. 1 + 2 = 3
-        - is the subtraction operator, ex. 3 - 2 = 1
+        + is the addition operator, ex. 1 + 2 = 3 <br></br>
+        - is the subtraction operator, ex. 3 - 2 = 1 <br></br>
         / is the division operator, ex. 4 / 2 = 2
         </code>
       </div>
