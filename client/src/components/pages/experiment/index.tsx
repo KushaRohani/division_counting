@@ -1,156 +1,174 @@
 // src/components/pages/ExperimentPage.tsx
-import React, { useState, useRef, useEffect } from 'react'
-import axios from 'axios'
-import { PageKey, PAGES, SurveyData } from '../../../App'
-import { QuestionScreen } from './components/questionScreen'
-import { countXDivisions, toLatexSimple, GroupEnum } from '../../ultilities/questionsTemplates'
-
-const apiUrl = import.meta.env.VITE_API_URL
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { BlockMath } from 'react-katex'
+import 'katex/dist/katex.min.css'
+import type { QuestionItem } from '../../ultilities/questionsTemplates'
+import { QuestionBank } from '../../ultilities/questionsTemplates'
+import type { SurveyData } from '../../../App'
 
 export interface ExperimentPageProps {
-  setPage: (page: PageKey) => void
+  setPage: () => void
   surveyData: SurveyData
   experimentDataRef: React.MutableRefObject<string[]>
+  idsRef: React.MutableRefObject<string[]>
   durationsRef: React.MutableRefObject<number[]>
   accuracyRef: React.MutableRefObject<boolean[]>
-  questions: string[]
-  assignmentId: number
-  group: GroupEnum
+  questions: QuestionItem[]
   setSurveyMetrics: (metrics: {
+    ids: string[]
     accuracyArray: boolean[]
     durations: number[]
     totalTime: number
     overallAccuracy: number
   }) => void
-  clearSurveyData: () => void
 }
 
 const ExperimentPage: React.FC<ExperimentPageProps> = ({
   setPage,
-  surveyData,
   experimentDataRef,
+  idsRef,
   durationsRef,
   accuracyRef,
   questions,
-  assignmentId,
-  group,
   setSurveyMetrics,
-  clearSurveyData,
 }) => {
   const [started, setStarted] = useState(false)
-  const [currentIdx, setCurrentIdx] = useState(0)
-  const [input, setInput] = useState('')
-  const [error, setError] = useState(false)
+  const [current, setCurrent] = useState(0)
+  const [typed, setTyped] = useState<string | null>(null)
 
-  const startTime = useRef<number>(0)
-  const questionTime = useRef<number>(0)
+  const questionStartRef = useRef<number>(0)
+  const total = questions.length
+  const question = questions[current]
+
+  // reset on mount
+  useEffect(() => {
+    idsRef.current = []
+    experimentDataRef.current = []
+    durationsRef.current = []
+    accuracyRef.current = []
+  }, [idsRef, experimentDataRef, durationsRef, accuracyRef])
 
   const handleStart = () => {
-    const now = Date.now()
-    startTime.current = now
-    questionTime.current = now
+    questionStartRef.current = Date.now()
     setStarted(true)
   }
 
-  const handleNext = async () => {
-    if (!input.trim()) {
-      setError(true)
-      return
-    }
-    setError(false)
+  const handleKey = useCallback(
+    (key: string) => {
+      if (!started) return
+      if (!['1', '2', '3', '4'].includes(key)) return
 
-    const now = Date.now()
-    durationsRef.current[currentIdx] = now - questionTime.current
-    questionTime.current = now
-
-    const raw = questions[currentIdx]
-    const correctCount = countXDivisions(raw)
-    const answer = parseInt(input, 10)
-    accuracyRef.current[currentIdx] = answer === correctCount
-    experimentDataRef.current[currentIdx] = input
-
-    setInput('')
-
-    if (currentIdx < questions.length - 1) {
-      setCurrentIdx(currentIdx + 1)
-      return
-    }
-
-    const endTime = Date.now()
-    const totalTime = endTime - startTime.current
-    const correctAnswers = accuracyRef.current.filter(Boolean).length
-    const overallAcc = correctAnswers / questions.length
-
-    setSurveyMetrics({
-      accuracyArray: accuracyRef.current,
-      durations: durationsRef.current,
-      totalTime,
-      overallAccuracy: overallAcc,
-    })
-
-    try {
-      await axios.post(`${apiUrl}/kusha`, {
-        assignmentId,
-        group,                            // send group to the server
-        yearsProgramming: surveyData.yearsProgramming,
-        age: surveyData.age,
-        sex: surveyData.sex,
-        language: surveyData.language,
-        email: surveyData.email,
-        task_accuracy: accuracyRef.current,
-        durations: durationsRef.current,
-        totalTime,
-        overallAccuracy: overallAcc,
-      })
-    } catch (err) {
-      console.error('Submit error', err)
-    }
-
-    clearSurveyData()
-    setPage(PAGES.thankyou)
-  }
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        if (started) handleNext()
+      // first press: select answer
+      if (typed === null) {
+        setTyped(key)
+        return
       }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [started, currentIdx, input])
 
-  const raw = questions[currentIdx]
-  const displayQuestion =
-    group === GroupEnum.latex ? toLatexSimple(raw) : raw
-  const useLatex = group === GroupEnum.latex
+      // if they change selection before confirming
+      if (typed !== key) {
+        setTyped(key)
+        return
+      }
+
+      // second press same key: confirm
+      const now = Date.now()
+      idsRef.current.push(question.id)
+      experimentDataRef.current.push(key)
+      durationsRef.current.push(now - questionStartRef.current)
+
+      // compute correctness
+      const answerKey = question.id.slice(2)
+      const correctAnswer = parseInt(
+        QuestionBank.answers[answerKey as keyof typeof QuestionBank.answers],
+        10
+      )
+      const isCorrect = parseInt(key, 10) === correctAnswer
+      accuracyRef.current.push(isCorrect)
+
+      questionStartRef.current = now
+      setTyped(null)
+
+      if (current < total - 1) {
+        setCurrent(c => c + 1)
+      } else {
+        // finalize metrics
+        const totalTime = durationsRef.current.reduce((a, b) => a + b, 0)
+        const arrAcc = [...accuracyRef.current]
+        const overall = arrAcc.filter(x => x).length / arrAcc.length
+
+        setSurveyMetrics({
+          ids: [...idsRef.current],
+          accuracyArray: arrAcc,
+          durations: [...durationsRef.current],
+          totalTime,
+          overallAccuracy: overall,
+        })
+        setPage()
+      }
+    },
+    [
+      started,
+      typed,
+      current,
+      total,
+      idsRef,
+      experimentDataRef,
+      durationsRef,
+      accuracyRef,
+      question.id,
+      setPage,
+      setSurveyMetrics,
+    ]
+  )
+
+  // listen for key presses
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      handleKey(e.key)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [handleKey])
+
+  if (!started) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full px-6 py-10">
+        <h1 className="text-4xl font-extrabold text-white mb-4">
+          Ready for the Experiment? 🚀
+        </h1>
+        <button
+          onClick={handleStart}
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded shadow-md"
+        >
+          Start Experiment
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10">
-      {!started ? (
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold text-white mb-4">
-            Ready for the Experiment? 🚀
-          </h1>
-          <button
-            onClick={handleStart}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded"
-          >
-            Start Experiment
-          </button>
-        </div>
+      <h1 className="text-4xl font-extrabold mb-4 text-white">Experiment</h1>
+      <p className="mb-2 text-white">
+        Question {current + 1}/{total}
+      </p>
+
+      <p className="text-lg font-semibold text-white mb-2">
+        What is the result of:
+      </p>
+
+      <div className="bg-gray-800 text-white p-4 rounded mb-6">
+        <BlockMath math={question.text} />
+      </div>
+
+      {!typed ? (
+        <p className="text-gray-400 mb-4">
+          Press <strong>1</strong>–<strong>4</strong> to select an answer, then press it again to submit.
+        </p>
       ) : (
-        <QuestionScreen
-          question={displayQuestion}
-          useLatex={useLatex}
-          current={currentIdx + 1}
-          total={questions.length}
-          input={input}
-          onChange={setInput}
-          onNext={handleNext}
-          error={error}
-        />
+        <p className="text-gray-400 mb-4">
+          You selected <strong>{typed}</strong>. Press <strong>{typed}</strong> again to confirm.
+        </p>
       )}
     </div>
   )
