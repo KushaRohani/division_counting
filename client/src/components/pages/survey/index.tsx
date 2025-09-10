@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { SurveyData } from './../../../App';
-import { ProgrammingLanguageMap }  from './../../../../../shared/languageOptions';
 
 interface SurveyPageProps {
   setPage: () => void;
@@ -18,10 +17,9 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, surveyData, setSurveyD
   };
 
   const isValid =
-    form.yearsProgramming.trim() !== '' &&
+    form.name.trim() !== '' &&
     form.age.trim() !== '' &&
-    form.sex.trim() !== '' &&
-    form.language.trim() !== '';
+    form.sex.trim() !== '';
 
   const handleNext = () => {
     if (isValid) {
@@ -71,14 +69,14 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, surveyData, setSurveyD
       <form className="w-full max-w-md text-white space-y-4">
         <div>
           <label className="block mb-1">
-            Years programming <span className="text-red-500">*</span>
+            Name <span className="text-red-500">*</span>
           </label>
           <input
-            type="number"
-            name="yearsProgramming"
-            value={form.yearsProgramming}
+            type="text"
+            name="name"
+            value={form.name}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('yearsProgramming')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('name')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
 
@@ -110,34 +108,6 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, surveyData, setSurveyD
             <option>Male</option>
             <option>Other</option>
           </select>
-        </div>
-
-        <div>
-          <label className="block mb-1">
-            Preferred Language <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="language"
-            value={form.language}
-            onChange={handleChange}
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('language')}`}
-          >
-            <option value="">Select</option>
-            {Object.entries(ProgrammingLanguageMap).map(([key, label]) => (
-              <option key={key} value={label}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block mb-1">Email for raffle (optional)</label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            className="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
         </div>
       </form>
 

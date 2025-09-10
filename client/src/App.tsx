@@ -2,17 +2,18 @@
 import { useRef, useState, useEffect } from 'react'
 import CenteredPaper from './components/paper'
 import LandingPage from './components/pages/landing'
+import DisclaimerPage from './components/pages/disclaimer'
 import InfoPage from './components/pages/information'
 import SurveyPage from './components/pages/survey'
 import Treatment, { TreatmentStep } from './components/pages/treatment'
 import ThankYouPage from './components/pages/thankyou'
-import { ProgrammingLanguage } from '../../shared/languageOptions'
 import ExplainSlash from "./components/pages/explain/explainSlash"
 import ExplainBar from "./components/pages/explain/explainBar"
 import { fetchQuestionItems } from './components/ultilities/questionsTemplates'
 
 export const PAGES = {
   landing: 'landing',
+  disclaimer: 'disclaimer',
   info: 'info',
   survey: 'survey',
   treatment: 'treatment',
@@ -21,11 +22,9 @@ export const PAGES = {
 export type PageKey = keyof typeof PAGES
 
 export interface SurveyData {
-  yearsProgramming: string
+  name: string
   age: string
   sex: string
-  language: ProgrammingLanguage | ''
-  email: string
   ids?: string[]
   test_accuracy?: boolean[]
   durations?: number[]
@@ -37,11 +36,9 @@ function App() {
   const [page, setPage] = useState<PageKey>(PAGES.landing)
 
   const surveyDataRef = useRef<SurveyData>({
-    yearsProgramming: '',
+    name: '',
     age: '',
     sex: '',
-    language: '',
-    email: '',
   })
   const experimentDataRef = useRef<string[]>([])
   const idsRef = useRef<string[]>([])
@@ -75,13 +72,21 @@ function App() {
   const renderPage = () => {
     switch (page) {
       case PAGES.landing:
-        return <LandingPage setPage={() => setPage(PAGES.info)} />
+        return <LandingPage setPage={() => setPage(PAGES.disclaimer)} />
+
+      case PAGES.disclaimer:
+        return (
+          <DisclaimerPage
+            setPage={() => setPage(PAGES.info)}
+            backPage={() => setPage(PAGES.landing)}
+          />
+        )
 
       case PAGES.info:
         return (
           <InfoPage
             setPage={() => setPage(PAGES.survey)}
-            backPage={() => setPage(PAGES.landing)}
+            backPage={() => setPage(PAGES.disclaimer)}
           />
         )
 

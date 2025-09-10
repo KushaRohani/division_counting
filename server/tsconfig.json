@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    // …everything you already have…
+
+    /* Modules */
+    "module": "commonjs",
+    "rootDir": "src",          // <‑‑ ➊ TS looks for source files here
+    "outDir": "dist",          // <‑‑ ➋ compiled JS goes here
+
+    /* Emit */
+    "sourceMap": true,         // (optional) dist/*.js + dist/*.js.map
+    // keep any other emit options you like…
+
+    /* Interop Constraints */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Type Checking */
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],   // make sure the compiler sees your files
+  "exclude": ["node_modules"]   // (optional) keeps node_modules out
+}
