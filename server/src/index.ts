@@ -10,8 +10,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// Serve static files from the public directory
-app.use('/api/public', express.static(path.join(__dirname, '../public')))
+// Static file serving removed - PDFs are now served from client's public folder
 
 // health check
 app.get('/', (_req, res) => {
