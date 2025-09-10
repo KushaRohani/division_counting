@@ -30,9 +30,6 @@ model Name {
   id        Int      @id @default(autoincrement())
   name      String
   created_at DateTime @default(now())
-  
-  // Relation to experiment data
-  experiments Experiment_data[]
 }
 
 // Main experiment data model
@@ -47,9 +44,6 @@ model Experiment_data {
   total_time       Int                  
   per_task_time    Int[]
   created_at       DateTime             @default(now())
-  
-  // Relation to names table
-  name             Name                 @relation(fields: [name_id], references: [id])
 }
 
 model Experiment_per_question {

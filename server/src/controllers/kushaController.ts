@@ -234,8 +234,7 @@ export const getExperimentEntryById: RequestHandler = async (req, res, next) => 
       return
     }
     const entry = await prisma.experiment_data.findUnique({ 
-      where: { id },
-      include: { name: true }
+      where: { id }
     })
     if (!entry) {
       res.status(404).json({ error: 'Not found' })
@@ -254,9 +253,7 @@ export const getExperimentEntryById: RequestHandler = async (req, res, next) => 
  */
 export const getAllExperimentEntriesCsv: RequestHandler = async (_req, res, next) => {
   try {
-    const data = await prisma.experiment_data.findMany({
-      include: { name: true }
-    })
+    const data = await prisma.experiment_data.findMany()
     const csv  = stringify(data, { header: true })
     res
       .status(200)
