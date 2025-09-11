@@ -11,7 +11,7 @@ const DisclaimerPage: React.FC<DisclaimerPageProps> = ({ setPage, backPage }) =>
   const handleDownloadPDF = () => {
     // Create a link to download the PDF from the client's public folder
     const link = document.createElement('a');
-    link.href = '/research-informationsheet-exemptresearchstudy.pdf';
+    link.href = '/division_counting/research-informationsheet-exemptresearchstudy.pdf';
     link.download = 'research-informationsheet-exemptresearchstudy.pdf';
     document.body.appendChild(link);
     link.click();
