@@ -38,6 +38,8 @@ jobs:
         run: |
           npm ci
           npm run build   # uses base from vite.config
+          # Ensure PDF is copied to dist folder
+          cp public/research-informationsheet-exemptresearchstudy.pdf dist/
 
       # 4. Configure Pages
       - uses: actions/configure-pages@v5

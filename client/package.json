@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node -e \"require('fs').copyFileSync('public/research-informationsheet-exemptresearchstudy.pdf', 'dist/research-informationsheet-exemptresearchstudy.pdf')\"",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "npm run preview"
