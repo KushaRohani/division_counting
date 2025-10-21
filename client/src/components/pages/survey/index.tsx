@@ -102,14 +102,14 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, setUnder18Page, survey
 
         <div>
           <label className="block mb-1">
-            Sex <span className="text-red-500">*</span>
+            Gender <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             name="sex"
             value={form.sex}
             onChange={handleChange}
-            placeholder="Enter your sex/gender"
+            placeholder="Enter the gender you identify as"
             className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('sex')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
