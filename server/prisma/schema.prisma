@@ -10,11 +10,6 @@ datasource db {
 }
 
 ///— your existing enums —///
-enum Sex {
-  male
-  female
-  other
-}
 
 model Assignment {
   id            Int       @id @default(autoincrement())
@@ -37,7 +32,7 @@ model Experiment_data {
   id               Int                  @id @default(autoincrement())
   name_id          Int
   age              Int
-  sex              Sex
+  sex              String
   accuracy         Float
   task_accuracy    Boolean[]
   task_ids         String[]

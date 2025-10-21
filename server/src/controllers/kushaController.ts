@@ -1,7 +1,7 @@
 // src/server/controllers/experimentController.ts
 
 import { RequestHandler } from 'express'
-import { PrismaClient, Sex } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { stringify } from 'csv-stringify/sync'
 import cron from 'node-cron'
 
@@ -29,14 +29,10 @@ cron.schedule('*/1 * * * *', async () => {
   }
 })
 
-function parseSex(input: string): Sex {
-  switch (input.toLowerCase()) {
-    case 'male':   return Sex.male
-    case 'female': return Sex.female
-    case 'other':  return Sex.other
-    default:
-      throw new Error(`Invalid sex: ${input}`)
-  }
+function sanitizeSex(input: string): string {
+  // Trim whitespace and return the input as-is
+  // No validation needed since we're accepting any text input
+  return input.trim()
 }
 
 /**
@@ -62,12 +58,12 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
     const parsedAge = parseInt(age, 10)
     const safeAge = isNaN(parsedAge) ? 0 : parsedAge
 
-    const sexEnum = parseSex(sexInput)
+    const sexString = sanitizeSex(sexInput)
 
     console.log('📥 Creating experiment entry with:', {
       name,
       safeAge,
-      sexEnum,
+      sexString,
       ids,
       task_accuracy,
       durations,
@@ -88,7 +84,7 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
         data: {
           name_id: nameRecord.id,
           age: safeAge,
-          sex: sexEnum,
+          sex: sexString,
           accuracy: overallAccuracy ?? 0,
           task_accuracy,
           task_ids: ids,

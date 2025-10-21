@@ -6,14 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // src/server/index.ts
 var express_1 = __importDefault(require("express"));
 var cors_1 = __importDefault(require("cors"));
-var path_1 = __importDefault(require("path"));
 var experimentRouter_1 = __importDefault(require("./routes/experimentRouter"));
 var errorHandler_1 = require("./middlewares/errorHandler");
 var app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-// Serve static files from the public directory
-app.use('/api/public', express_1.default.static(path_1.default.join(__dirname, '../public')));
+// Static file serving removed - PDFs are now served from client's public folder
 // health check
 app.get('/', function (_req, res) {
     res.send('Server is running!');

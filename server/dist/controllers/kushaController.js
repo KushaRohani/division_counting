@@ -81,21 +81,17 @@ node_cron_1.default.schedule('*/1 * * * *', function () { return __awaiter(void 
         }
     });
 }); });
-function parseSex(input) {
-    switch (input.toLowerCase()) {
-        case 'male': return client_1.Sex.male;
-        case 'female': return client_1.Sex.female;
-        case 'other': return client_1.Sex.other;
-        default:
-            throw new Error("Invalid sex: ".concat(input));
-    }
+function sanitizeSex(input) {
+    // Trim whitespace and return the input as-is
+    // No validation needed since we're accepting any text input
+    return input.trim();
 }
 /**
  * POST /
  * Handles survey + experiment submission for Experiment_data.
  */
 var createExperimentEntry = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name_1, age, sexInput, ids_1, task_accuracy_1, durations_1, totalTime_1, overallAccuracy_1, parsedAge, safeAge_1, sexEnum_1, entry, err_2;
+    var _a, name_1, age, sexInput, ids_1, task_accuracy_1, durations_1, totalTime_1, overallAccuracy_1, parsedAge, safeAge_1, sexString_1, entry, err_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -106,11 +102,11 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                 _a = req.body, name_1 = _a.name, age = _a.age, sexInput = _a.sex, ids_1 = _a.ids, task_accuracy_1 = _a.task_accuracy, durations_1 = _a.durations, totalTime_1 = _a.totalTime, overallAccuracy_1 = _a.overallAccuracy;
                 parsedAge = parseInt(age, 10);
                 safeAge_1 = isNaN(parsedAge) ? 0 : parsedAge;
-                sexEnum_1 = parseSex(sexInput);
+                sexString_1 = sanitizeSex(sexInput);
                 console.log('📥 Creating experiment entry with:', {
                     name: name_1,
                     safeAge: safeAge_1,
-                    sexEnum: sexEnum_1,
+                    sexString: sexString_1,
                     ids: ids_1,
                     task_accuracy: task_accuracy_1,
                     durations: durations_1,
@@ -134,7 +130,7 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                                             data: {
                                                 name_id: nameRecord.id,
                                                 age: safeAge_1,
-                                                sex: sexEnum_1,
+                                                sex: sexString_1,
                                                 accuracy: overallAccuracy_1 !== null && overallAccuracy_1 !== void 0 ? overallAccuracy_1 : 0,
                                                 task_accuracy: task_accuracy_1,
                                                 task_ids: ids_1,
@@ -299,8 +295,7 @@ var getExperimentEntryById = function (req, res, next) { return __awaiter(void 0
                     return [2 /*return*/];
                 }
                 return [4 /*yield*/, prisma.experiment_data.findUnique({
-                        where: { id: id },
-                        include: { name: true }
+                        where: { id: id }
                     })];
             case 1:
                 entry = _a.sent();
@@ -330,9 +325,7 @@ var getAllExperimentEntriesCsv = function (_req, res, next) { return __awaiter(v
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, prisma.experiment_data.findMany({
-                        include: { name: true }
-                    })];
+                return [4 /*yield*/, prisma.experiment_data.findMany()];
             case 1:
                 data = _a.sent();
                 csv = (0, sync_1.stringify)(data, { header: true });
