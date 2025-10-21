@@ -3,12 +3,13 @@ import { SurveyData } from './../../../App';
 
 interface SurveyPageProps {
   setPage: () => void;
+  setUnder18Page: () => void;
   backPage: () => void;
   surveyData: SurveyData;
   setSurveyData: (data: SurveyData) => void;
 }
 
-const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, surveyData, setSurveyData, backPage }) => {
+const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, setUnder18Page, surveyData, setSurveyData, backPage }) => {
   const [form, setForm] = useState(surveyData);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
@@ -24,7 +25,13 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, surveyData, setSurveyD
   const handleNext = () => {
     if (isValid) {
       setSurveyData(form);
-      setPage(); // or your next page
+      // Check if user is under 18
+      const age = parseInt(form.age);
+      if (age < 18) {
+        setUnder18Page();
+      } else {
+        setPage(); // Continue to treatment page
+      }
     } else {
       setAttemptedSubmit(true);
     }

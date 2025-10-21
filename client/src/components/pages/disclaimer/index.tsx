@@ -73,7 +73,7 @@ const DisclaimerPage: React.FC<DisclaimerPageProps> = ({ setPage, backPage }) =>
             </li>
             <li className="flex items-start">
               <span className="text-blue-400 mr-3">•</span>
-              <span>The study will take approximately 10-15 minutes to complete</span>
+              <span>The study will take approximately 10-20 minutes to complete</span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-400 mr-3">•</span>

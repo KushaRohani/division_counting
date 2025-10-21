@@ -7,6 +7,7 @@ import InfoPage from './components/pages/information'
 import SurveyPage from './components/pages/survey'
 import Treatment, { TreatmentStep } from './components/pages/treatment'
 import ThankYouPage from './components/pages/thankyou'
+import Under18Page from './components/pages/under18'
 import ExplainSlash from "./components/pages/explain/explainSlash"
 import ExplainBar from "./components/pages/explain/explainBar"
 import { fetchQuestionItems } from './components/ultilities/questionsTemplates'
@@ -16,6 +17,7 @@ export const PAGES = {
   disclaimer: 'disclaimer',
   info: 'info',
   survey: 'survey',
+  under18: 'under18',
   treatment: 'treatment',
   thankyou: 'thankyou',
 } as const
@@ -94,11 +96,19 @@ function App() {
         return (
           <SurveyPage
             setPage={() => setPage(PAGES.treatment)}
+            setUnder18Page={() => setPage(PAGES.under18)}
             backPage={() => setPage(PAGES.info)}
             surveyData={surveyDataRef.current}
             setSurveyData={data => {
               surveyDataRef.current = data
             }}
+          />
+        )
+
+      case PAGES.under18:
+        return (
+          <Under18Page
+            setPage={() => setPage(PAGES.landing)}
           />
         )
 
