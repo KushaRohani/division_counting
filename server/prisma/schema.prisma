@@ -11,16 +11,7 @@ datasource db {
 
 ///— your existing enums —///
 
-model Assignment {
-  id            Int       @id @default(autoincrement())
-  latinCounter  Int
-  group         Int
-  completed     Boolean   @default(false)
-  abandoned     Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-}
-
-// Names table for storing participant names
+// Names table for storing participant names (separate from experiment data)
 model Name {
   id        Int      @id @default(autoincrement())
   name      String
@@ -30,7 +21,6 @@ model Name {
 // Main experiment data model
 model Experiment_data {
   id               Int                  @id @default(autoincrement())
-  name_id          Int
   age              Int
   sex              String
   accuracy         Float
@@ -39,6 +29,7 @@ model Experiment_data {
   total_time       Int                  
   per_task_time    Int[]
   created_at       DateTime             @default(now())
+  questionnaire    Questionnaire?
 }
 
 model Experiment_per_question {
@@ -47,4 +38,22 @@ model Experiment_per_question {
   user_id         Int
   result          Boolean
   time            Int
+}
+
+// Post-study questionnaire model
+model Questionnaire {
+  id                        Int                  @id @default(autoincrement())
+  experiment_data_id        Int                  @unique
+  easier_form               String?              // Which form of division felt easier to work with?
+  easier_form_thoughts      String?              // Please provide any thoughts on why ___
+  used_calculator            Boolean?             // Did you use a calculator?
+  used_scratch_paper         Boolean?             // Did you use scratch paper?
+  difficulty_rating          Int?                 // How difficult from 1-7 (1-Very easy to 7-Very hard)
+  programming_experience     Boolean?             // Do you have experience programming?
+  preferred_language         String?              // What's your preferred programming language, if any?
+  highest_math_course        String?              // What's the highest level math course you've taken?
+  used_vertical_division     Boolean?             // Have you used a program or language that represents division vertically?
+  created_at                 DateTime             @default(now())
+  
+  experiment_data            Experiment_data     @relation(fields: [experiment_data_id], references: [id], onDelete: Cascade)
 }

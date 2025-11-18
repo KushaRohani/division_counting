@@ -4,33 +4,30 @@ import { BlockMath } from 'react-katex'
 import 'katex/dist/katex.min.css'
 import { AssignmentScreen } from './components/AssigmentScreen'
 import type { QuestionItem } from '../../ultilities/questionsTemplates'
-import { trainingBank } from '../../ultilities/questionsTemplates'
 
 interface TrainingPageProps {
   setPage: () => void
   trainingQuestions: QuestionItem[]
+  partNumber: number
+  totalParts: number
 }
 
 const TrainingPage: React.FC<TrainingPageProps> = ({
   setPage,
   trainingQuestions,
+  partNumber,
+  totalParts,
 }) => {
-  const questions = trainingQuestions
+  // Remove first 5 questions
+  const questions = trainingQuestions.slice(5)
   const total = questions.length
 
   const [started, setStarted] = useState(false)
   const [idx, setIdx] = useState(0)
   const [typed, setTyped] = useState<string | null>(null)
-  const [showFeedback, setShowFeedback] = useState(false)
 
   const current = questions[idx]
-  const answerKey = current.id.slice(2)
-  const correctAnswer = parseInt(
-    trainingBank.answers[answerKey as keyof typeof trainingBank.answers],
-    10
-  )
-  const userAns = typed === null ? null : parseInt(typed, 10)
-  const isCorrect = userAns === correctAnswer
+  const progress = ((idx + 1) / total) * 100
 
   const handleKey = useCallback(
     (token: string) => {
@@ -43,30 +40,21 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
         return
       }
 
-      // second press same key: submit and show feedback
-      if (!showFeedback && typed === token) {
-        setShowFeedback(true)
-        return
-      }
-
-      // if they change their mind before confirming, allow new selection
-      if (!showFeedback && typed !== token) {
+      // if they change selection before confirming
+      if (typed !== token) {
         setTyped(token)
         return
       }
 
-      // after feedback: any press moves to next
-      if (showFeedback) {
-        if (idx < total - 1) {
-          setIdx(i => i + 1)
-          setTyped(null)
-          setShowFeedback(false)
-        } else {
-          setPage()
-        }
+      // second press same key: confirm and move to next (no feedback)
+      if (idx < total - 1) {
+        setIdx(i => i + 1)
+        setTyped(null)
+      } else {
+        setPage()
       }
     },
-    [started, typed, showFeedback, idx, total, setPage]
+    [started, typed, idx, total, setPage]
   )
 
   useEffect(() => {
@@ -92,11 +80,22 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10 text-white">
       <h1 className="text-4xl font-extrabold mb-4">Practice</h1>
-      <p className="mb-2">
-        Question {idx + 1}/{total}
-      </p>
+      
+      {/* Progress Bar */}
+      <div className="w-full max-w-xl mb-4">
+        <div className="flex justify-between text-sm mb-2">
+          <span>Question {idx + 1} of {total}</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-3">
+          <div
+            className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
 
-      <p>
+      <p className="mb-2">
         <span className="text-lg font-semibold">What is the result of:</span>
       </p>
 
@@ -108,29 +107,14 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
         )}
       </div>
 
-      {!showFeedback ? (
-        typed === null ? (
-          <p className="mb-4">
-            Press <strong>1</strong>–<strong>4</strong> to select your answer, then press it again to submit.
-          </p>
-        ) : (
-          <p className="mb-4">
-            You selected <strong>{typed}</strong>. Press <strong>{typed}</strong> again to submit.
-          </p>
-        )
+      {typed === null ? (
+        <p className="mb-4 text-gray-400">
+          Press <strong>1</strong>–<strong>4</strong> to select an answer, then press it again to submit.
+        </p>
       ) : (
-        <div className="mb-4">
-          {isCorrect ? (
-            <p className="text-green-400 font-semibold text-lg">Correct!</p>
-          ) : (
-            <p className="text-red-400 font-semibold text-lg">
-              Incorrect; the right answer was <strong>{correctAnswer}</strong>.
-            </p>
-          )}
-          <p className="mt-2 text-sm text-gray-400">
-            Press any key (1–4) to continue.
-          </p>
-        </div>
+        <p className="mb-4 text-gray-400">
+          You selected <strong>{typed}</strong>. Press <strong>{typed}</strong> again to confirm.
+        </p>
       )}
     </div>
   )

@@ -8,6 +8,7 @@ import SurveyPage from './components/pages/survey'
 import Treatment, { TreatmentStep } from './components/pages/treatment'
 import ThankYouPage from './components/pages/thankyou'
 import Under18Page from './components/pages/under18'
+import QuestionnairePage, { QuestionnaireData } from './components/pages/questionnaire'
 import ExplainSlash from "./components/pages/explain/explainSlash"
 import ExplainBar from "./components/pages/explain/explainBar"
 import { fetchQuestionItems } from './components/ultilities/questionsTemplates'
@@ -19,6 +20,7 @@ export const PAGES = {
   survey: 'survey',
   under18: 'under18',
   treatment: 'treatment',
+  questionnaire: 'questionnaire',
   thankyou: 'thankyou',
 } as const
 export type PageKey = keyof typeof PAGES
@@ -46,6 +48,17 @@ function App() {
   const idsRef = useRef<string[]>([])
   const accuracyRef = useRef<boolean[]>([])
   const durationsRef = useRef<number[]>([])
+  const questionnaireDataRef = useRef<QuestionnaireData>({
+    easier_form: '',
+    easier_form_thoughts: '',
+    used_calculator: null,
+    used_scratch_paper: null,
+    difficulty_rating: null,
+    programming_experience: null,
+    preferred_language: '',
+    highest_math_course: '',
+    used_vertical_division: null,
+  })
 
   const [treatments, setTreatments] = useState<TreatmentStep[]>([])
   const [loading, setLoading] = useState(true)
@@ -124,7 +137,18 @@ function App() {
             idsRef={idsRef}
             durationsRef={durationsRef}
             accuracyRef={accuracyRef}
-            onFinish={() => setPage(PAGES.thankyou)}
+            onFinish={() => setPage(PAGES.questionnaire)}
+          />
+        )
+
+      case PAGES.questionnaire:
+        return (
+          <QuestionnairePage
+            setPage={() => setPage(PAGES.thankyou)}
+            questionnaireData={questionnaireDataRef.current}
+            setQuestionnaireData={data => {
+              questionnaireDataRef.current = data
+            }}
           />
         )
 
@@ -140,6 +164,7 @@ function App() {
               totalTime: surveyDataRef.current.totalTime ?? 0,
               overallAccuracy: surveyDataRef.current.overallAccuracy ?? 0,
             }}
+            questionnaireData={questionnaireDataRef.current}
           />
         )
 

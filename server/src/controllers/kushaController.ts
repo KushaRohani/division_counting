@@ -3,31 +3,8 @@
 import { RequestHandler } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { stringify } from 'csv-stringify/sync'
-import cron from 'node-cron'
 
 const prisma = new PrismaClient()
-
-// Every minute, clean up assignments older than 30 minutes that never completed
-cron.schedule('*/1 * * * *', async () => {
-  try {
-    const cutoff = new Date(Date.now() - 30 * 60 * 1000)
-    const { count } = await prisma.assignment.updateMany({
-      where: {
-        completed: false,
-        abandoned: false,
-        createdAt: { lt: cutoff },
-      },
-      data: {
-        abandoned: true,
-      },
-    });
-    if (count > 0) {
-      console.log(`🗑  Cleaned up ${count} abandoned assignments (older than 30m)`)
-    }
-  } catch (err) {
-    console.error('Error cleaning up abandoned assignments:', err)
-  }
-})
 
 function sanitizeSex(input: string): string {
   // Trim whitespace and return the input as-is
@@ -53,6 +30,16 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
       durations,
       totalTime,
       overallAccuracy,
+      // Questionnaire data
+      easier_form,
+      easier_form_thoughts,
+      used_calculator,
+      used_scratch_paper,
+      difficulty_rating,
+      programming_experience,
+      preferred_language,
+      highest_math_course,
+      used_vertical_division,
     } = req.body as Record<string, any>
 
     const parsedAge = parseInt(age, 10)
@@ -72,17 +59,18 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
     })
 
     const entry = await prisma.$transaction(async tx => {
-      // create the name record first
-      const nameRecord = await tx.name.create({
-        data: {
-          name: name.trim(),
-        },
-      })
+      // Create name record separately (not linked to experiment data)
+      if (name && name.trim()) {
+        await tx.name.create({
+          data: {
+            name: name.trim(),
+          },
+        })
+      }
 
-      // create the main experiment record
+      // create the main experiment record (without name_id)
       const created = await tx.experiment_data.create({
         data: {
-          name_id: nameRecord.id,
           age: safeAge,
           sex: sexString,
           accuracy: overallAccuracy ?? 0,
@@ -105,6 +93,51 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
         data: perQuestionData,
       })
 
+      // Create questionnaire entry if questionnaire data is provided
+      if (
+        easier_form !== undefined ||
+        easier_form_thoughts !== undefined ||
+        used_calculator !== undefined ||
+        used_scratch_paper !== undefined ||
+        difficulty_rating !== undefined ||
+        programming_experience !== undefined ||
+        preferred_language !== undefined ||
+        highest_math_course !== undefined ||
+        used_vertical_division !== undefined
+      ) {
+        await tx.questionnaire.create({
+          data: {
+            experiment_data_id: created.id,
+            easier_form: easier_form || null,
+            easier_form_thoughts: easier_form_thoughts || null,
+            used_calculator:
+              used_calculator !== undefined
+                ? used_calculator === true || used_calculator === 'true'
+                : null,
+            used_scratch_paper:
+              used_scratch_paper !== undefined
+                ? used_scratch_paper === true || used_scratch_paper === 'true'
+                : null,
+            difficulty_rating:
+              difficulty_rating !== undefined
+                ? parseInt(difficulty_rating, 10) || null
+                : null,
+            programming_experience:
+              programming_experience !== undefined
+                ? programming_experience === true ||
+                  programming_experience === 'true'
+                : null,
+            preferred_language: preferred_language || null,
+            highest_math_course: highest_math_course || null,
+            used_vertical_division:
+              used_vertical_division !== undefined
+                ? used_vertical_division === true ||
+                  used_vertical_division === 'true'
+                : null,
+          },
+        })
+      }
+
       return created
     })
 
@@ -115,108 +148,6 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
   }
 }
 
-export const getNextGroup: RequestHandler = async (req, res, next) => {
-  try {
-    console.log("Getting next group")
-    const question_size_raw = req.query.question_size;
-    const syntax_size_raw = req.query.syntax_size;
-    const group_id_raw = req.query.group_id;
-
-    const question_size = Number(question_size_raw);
-    const syntax_size = Number(syntax_size_raw);
-    const group_id = Number(group_id_raw);
-
-    if (
-      !question_size_raw || !syntax_size_raw || !group_id_raw ||
-      isNaN(question_size) || isNaN(syntax_size) || isNaN(group_id) ||
-      question_size <= 0 || syntax_size <= 0 || group_id <= 0
-    ) {
-      res.status(400).json({ 
-        error: 'Invalid input',
-        question_size: question_size_raw,
-        syntax_size: syntax_size_raw,
-      });
-      return;
-    }
-
-    const { adjustedQuestionArray, adjustedSyntaxArray, assignmentId } = await prisma.$transaction(async (tx) => {
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(42)`;
-
-      const questionArray = Array.from({ length: question_size }, (_, i) => i + 1);
-      const syntaxArray = Array.from({ length: question_size }, (_, i) => i + 1);
-
-      const abandonedAssignment = await tx.assignment.findFirst({
-        where: {
-          group: group_id,
-          abandoned: true,
-        },
-        orderBy: {
-          latinCounter: 'asc',
-        },
-      });
-
-      let newLatinCounter: number;
-      let assignmentId: number;
-
-      if (abandonedAssignment) {
-        await tx.assignment.update({
-          where: { id: abandonedAssignment.id },
-          data: {
-            abandoned: false,
-            completed: false,
-          },
-        });
-
-        newLatinCounter = abandonedAssignment.latinCounter;
-        assignmentId = abandonedAssignment.id;
-      } else {
-        const maxLatinCounter = await tx.assignment.aggregate({
-          where: { group: group_id },
-          _max: {
-            latinCounter: true,
-          },
-        });
-
-        const lastLatinCounter = maxLatinCounter._max.latinCounter ?? -1;
-        newLatinCounter = lastLatinCounter + 1;
-
-        const newAssignment = await tx.assignment.create({
-          data: {
-            completed: false,
-            abandoned: false,
-            latinCounter: newLatinCounter,
-            group: group_id,
-          },
-        });
-
-        assignmentId = newAssignment.id;
-      }
-
-      const adjustedQuestionArray = questionArray.map(
-        val => ((val + newLatinCounter - 1) % question_size) + 1
-      );
-
-      const adjustedSyntaxArray = syntaxArray.map(
-        val => ((((val - newLatinCounter - 1) % syntax_size) + syntax_size) % syntax_size) + 1
-      );
-
-      return {
-        adjustedQuestionArray,
-        adjustedSyntaxArray,
-        assignmentId,
-      };
-    });
-
-    res.json({
-      questionArray: adjustedQuestionArray,
-      syntaxArray: adjustedSyntaxArray,
-      assignmentId,
-    });
-  } catch (err) {
-    console.error('❌ Error in getNextGroup:', err);
-    next(err);
-  }
-};
 
 /**
  * GET /:id

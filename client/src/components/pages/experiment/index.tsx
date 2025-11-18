@@ -14,6 +14,8 @@ export interface ExperimentPageProps {
   durationsRef: React.MutableRefObject<number[]>
   accuracyRef: React.MutableRefObject<boolean[]>
   questions: QuestionItem[]
+  partNumber: number
+  totalParts: number
   setSurveyMetrics: (metrics: {
     ids: string[]
     accuracyArray: boolean[]
@@ -30,6 +32,8 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
   durationsRef,
   accuracyRef,
   questions,
+  partNumber,
+  totalParts,
   setSurveyMetrics,
 }) => {
   const [started, setStarted] = useState(false)
@@ -146,19 +150,36 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
     )
   }
 
+  const progress = ((current + 1) / total) * 100
+
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10">
       <h1 className="text-4xl font-extrabold mb-4 text-white">Experiment</h1>
-      <p className="mb-2 text-white">
-        Question {current + 1}/{total}
-      </p>
+      
+      {/* Progress Bar */}
+      <div className="w-full max-w-xl mb-4">
+        <div className="flex justify-between text-sm mb-2 text-white">
+          <span>Question {current + 1} of {total}</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-3">
+          <div
+            className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
 
       <p className="text-lg font-semibold text-white mb-2">
         What is the result of:
       </p>
 
-      <div className="bg-gray-800 text-white p-4 rounded mb-6">
-        <BlockMath math={question.text} />
+      <div className="bg-gray-800 text-white p-4 rounded mb-6 max-w-xl w-full text-center">
+        {question.id.startsWith('02') ? (
+          <BlockMath math={question.text} />
+        ) : (
+          <code className="text-xl">{question.text}</code>
+        )}
       </div>
 
       {!typed ? (

@@ -14,10 +14,10 @@ const ExplainBar: React.FC<ExplainBarProps> = ({ onNext }) => {
         Bar division Explanation
       </h1>
 
-      <p className="text-white text-md text-center max-w-xl mb-6">
+      <div className="text-white text-md text-center max-w-xl mb-6">
         In this experiment, you will treat <BlockMath>{latex2}</BlockMath> as 'a' being divided by 'b'.
         As a reminder of some mathematical notation:
-      </p>
+      </div>
 
       <div className="bg-gray-800 text-white px-4 py-3 rounded max-w-xl w-full mb-8 border border-gray-700 whitespace-pre-wrap">
         <code>
