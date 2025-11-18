@@ -58,7 +58,7 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
       overallAccuracy,
     })
 
-    const entry = await prisma.$transaction(async tx => {
+    const entry = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
       // Create name record separately (not linked to experiment data)
       if (name && name.trim()) {
         await tx.name.create({

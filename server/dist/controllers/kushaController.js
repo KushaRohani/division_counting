@@ -1,9 +1,5 @@
 "use strict";
 // src/server/controllers/experimentController.ts
-var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
-    if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
-    return cooked;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -40,47 +36,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllExperimentEntriesCsv = exports.getExperimentEntryById = exports.getNextGroup = exports.createExperimentEntry = void 0;
+exports.getAllExperimentEntriesCsv = exports.getExperimentEntryById = exports.createExperimentEntry = void 0;
 var client_1 = require("@prisma/client");
 var sync_1 = require("csv-stringify/sync");
-var node_cron_1 = __importDefault(require("node-cron"));
 var prisma = new client_1.PrismaClient();
-// Every minute, clean up assignments older than 30 minutes that never completed
-node_cron_1.default.schedule('*/1 * * * *', function () { return __awaiter(void 0, void 0, void 0, function () {
-    var cutoff, count, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                cutoff = new Date(Date.now() - 30 * 60 * 1000);
-                return [4 /*yield*/, prisma.assignment.updateMany({
-                        where: {
-                            completed: false,
-                            abandoned: false,
-                            createdAt: { lt: cutoff },
-                        },
-                        data: {
-                            abandoned: true,
-                        },
-                    })];
-            case 1:
-                count = (_a.sent()).count;
-                if (count > 0) {
-                    console.log("\uD83D\uDDD1  Cleaned up ".concat(count, " abandoned assignments (older than 30m)"));
-                }
-                return [3 /*break*/, 3];
-            case 2:
-                err_1 = _a.sent();
-                console.error('Error cleaning up abandoned assignments:', err_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); });
 function sanitizeSex(input) {
     // Trim whitespace and return the input as-is
     // No validation needed since we're accepting any text input
@@ -91,7 +51,9 @@ function sanitizeSex(input) {
  * Handles survey + experiment submission for Experiment_data.
  */
 var createExperimentEntry = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name_1, age, sexInput, ids_1, task_accuracy_1, durations_1, totalTime_1, overallAccuracy_1, parsedAge, safeAge_1, sexString_1, entry, err_2;
+    var _a, name_1, age, sexInput, ids_1, task_accuracy_1, durations_1, totalTime_1, overallAccuracy_1, 
+    // Questionnaire data
+    easier_form_1, easier_form_thoughts_1, used_calculator_1, used_scratch_paper_1, difficulty_rating_1, programming_experience_1, preferred_language_1, highest_math_course_1, used_vertical_division_1, parsedAge, safeAge_1, sexString_1, entry, err_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -99,7 +61,7 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                 _b.label = 1;
             case 1:
                 _b.trys.push([1, 3, , 4]);
-                _a = req.body, name_1 = _a.name, age = _a.age, sexInput = _a.sex, ids_1 = _a.ids, task_accuracy_1 = _a.task_accuracy, durations_1 = _a.durations, totalTime_1 = _a.totalTime, overallAccuracy_1 = _a.overallAccuracy;
+                _a = req.body, name_1 = _a.name, age = _a.age, sexInput = _a.sex, ids_1 = _a.ids, task_accuracy_1 = _a.task_accuracy, durations_1 = _a.durations, totalTime_1 = _a.totalTime, overallAccuracy_1 = _a.overallAccuracy, easier_form_1 = _a.easier_form, easier_form_thoughts_1 = _a.easier_form_thoughts, used_calculator_1 = _a.used_calculator, used_scratch_paper_1 = _a.used_scratch_paper, difficulty_rating_1 = _a.difficulty_rating, programming_experience_1 = _a.programming_experience, preferred_language_1 = _a.preferred_language, highest_math_course_1 = _a.highest_math_course, used_vertical_division_1 = _a.used_vertical_division;
                 parsedAge = parseInt(age, 10);
                 safeAge_1 = isNaN(parsedAge) ? 0 : parsedAge;
                 sexString_1 = sanitizeSex(sexInput);
@@ -114,33 +76,33 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                     overallAccuracy: overallAccuracy_1,
                 });
                 return [4 /*yield*/, prisma.$transaction(function (tx) { return __awaiter(void 0, void 0, void 0, function () {
-                        var nameRecord, created, perQuestionData;
+                        var created, perQuestionData;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4 /*yield*/, tx.name.create({
+                                case 0:
+                                    if (!(name_1 && name_1.trim())) return [3 /*break*/, 2];
+                                    return [4 /*yield*/, tx.name.create({
+                                            data: {
+                                                name: name_1.trim(),
+                                            },
+                                        })];
+                                case 1:
+                                    _a.sent();
+                                    _a.label = 2;
+                                case 2: return [4 /*yield*/, tx.experiment_data.create({
                                         data: {
-                                            name: name_1.trim(),
+                                            age: safeAge_1,
+                                            sex: sexString_1,
+                                            accuracy: overallAccuracy_1 !== null && overallAccuracy_1 !== void 0 ? overallAccuracy_1 : 0,
+                                            task_accuracy: task_accuracy_1,
+                                            task_ids: ids_1,
+                                            total_time: totalTime_1 !== null && totalTime_1 !== void 0 ? totalTime_1 : 0,
+                                            per_task_time: durations_1,
                                         },
                                     })
-                                    // create the main experiment record
+                                    // insert per-question rows
                                 ];
-                                case 1:
-                                    nameRecord = _a.sent();
-                                    return [4 /*yield*/, tx.experiment_data.create({
-                                            data: {
-                                                name_id: nameRecord.id,
-                                                age: safeAge_1,
-                                                sex: sexString_1,
-                                                accuracy: overallAccuracy_1 !== null && overallAccuracy_1 !== void 0 ? overallAccuracy_1 : 0,
-                                                task_accuracy: task_accuracy_1,
-                                                task_ids: ids_1,
-                                                total_time: totalTime_1 !== null && totalTime_1 !== void 0 ? totalTime_1 : 0,
-                                                per_task_time: durations_1,
-                                            },
-                                        })
-                                        // insert per-question rows
-                                    ];
-                                case 2:
+                                case 3:
                                     created = _a.sent();
                                     perQuestionData = ids_1.map(function (questionId, index) { return ({
                                         question_id: parseInt(questionId, 10),
@@ -150,10 +112,50 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                                     }); });
                                     return [4 /*yield*/, tx.experiment_per_question.createMany({
                                             data: perQuestionData,
-                                        })];
-                                case 3:
+                                        })
+                                        // Create questionnaire entry if questionnaire data is provided
+                                    ];
+                                case 4:
                                     _a.sent();
-                                    return [2 /*return*/, created];
+                                    if (!(easier_form_1 !== undefined ||
+                                        easier_form_thoughts_1 !== undefined ||
+                                        used_calculator_1 !== undefined ||
+                                        used_scratch_paper_1 !== undefined ||
+                                        difficulty_rating_1 !== undefined ||
+                                        programming_experience_1 !== undefined ||
+                                        preferred_language_1 !== undefined ||
+                                        highest_math_course_1 !== undefined ||
+                                        used_vertical_division_1 !== undefined)) return [3 /*break*/, 6];
+                                    return [4 /*yield*/, tx.questionnaire.create({
+                                            data: {
+                                                experiment_data_id: created.id,
+                                                easier_form: easier_form_1 || null,
+                                                easier_form_thoughts: easier_form_thoughts_1 || null,
+                                                used_calculator: used_calculator_1 !== undefined
+                                                    ? used_calculator_1 === true || used_calculator_1 === 'true'
+                                                    : null,
+                                                used_scratch_paper: used_scratch_paper_1 !== undefined
+                                                    ? used_scratch_paper_1 === true || used_scratch_paper_1 === 'true'
+                                                    : null,
+                                                difficulty_rating: difficulty_rating_1 !== undefined
+                                                    ? parseInt(difficulty_rating_1, 10) || null
+                                                    : null,
+                                                programming_experience: programming_experience_1 !== undefined
+                                                    ? programming_experience_1 === true ||
+                                                        programming_experience_1 === 'true'
+                                                    : null,
+                                                preferred_language: preferred_language_1 || null,
+                                                highest_math_course: highest_math_course_1 || null,
+                                                used_vertical_division: used_vertical_division_1 !== undefined
+                                                    ? used_vertical_division_1 === true ||
+                                                        used_vertical_division_1 === 'true'
+                                                    : null,
+                                            },
+                                        })];
+                                case 5:
+                                    _a.sent();
+                                    _a.label = 6;
+                                case 6: return [2 /*return*/, created];
                             }
                         });
                     }); })];
@@ -162,129 +164,21 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                 res.status(201).json(entry);
                 return [3 /*break*/, 4];
             case 3:
-                err_2 = _b.sent();
-                console.error('❌ Error in createExperimentEntry:', err_2);
-                next(err_2);
+                err_1 = _b.sent();
+                console.error('❌ Error in createExperimentEntry:', err_1);
+                next(err_1);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }
     });
 }); };
 exports.createExperimentEntry = createExperimentEntry;
-var getNextGroup = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var question_size_raw, syntax_size_raw, group_id_raw, question_size_1, syntax_size_1, group_id_1, _a, adjustedQuestionArray, adjustedSyntaxArray, assignmentId, err_3;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0:
-                _b.trys.push([0, 2, , 3]);
-                console.log("Getting next group");
-                question_size_raw = req.query.question_size;
-                syntax_size_raw = req.query.syntax_size;
-                group_id_raw = req.query.group_id;
-                question_size_1 = Number(question_size_raw);
-                syntax_size_1 = Number(syntax_size_raw);
-                group_id_1 = Number(group_id_raw);
-                if (!question_size_raw || !syntax_size_raw || !group_id_raw ||
-                    isNaN(question_size_1) || isNaN(syntax_size_1) || isNaN(group_id_1) ||
-                    question_size_1 <= 0 || syntax_size_1 <= 0 || group_id_1 <= 0) {
-                    res.status(400).json({
-                        error: 'Invalid input',
-                        question_size: question_size_raw,
-                        syntax_size: syntax_size_raw,
-                    });
-                    return [2 /*return*/];
-                }
-                return [4 /*yield*/, prisma.$transaction(function (tx) { return __awaiter(void 0, void 0, void 0, function () {
-                        var questionArray, syntaxArray, abandonedAssignment, newLatinCounter, assignmentId, maxLatinCounter, lastLatinCounter, newAssignment, adjustedQuestionArray, adjustedSyntaxArray;
-                        var _a;
-                        return __generator(this, function (_b) {
-                            switch (_b.label) {
-                                case 0: return [4 /*yield*/, tx.$executeRaw(templateObject_1 || (templateObject_1 = __makeTemplateObject(["SELECT pg_advisory_xact_lock(42)"], ["SELECT pg_advisory_xact_lock(42)"])))];
-                                case 1:
-                                    _b.sent();
-                                    questionArray = Array.from({ length: question_size_1 }, function (_, i) { return i + 1; });
-                                    syntaxArray = Array.from({ length: question_size_1 }, function (_, i) { return i + 1; });
-                                    return [4 /*yield*/, tx.assignment.findFirst({
-                                            where: {
-                                                group: group_id_1,
-                                                abandoned: true,
-                                            },
-                                            orderBy: {
-                                                latinCounter: 'asc',
-                                            },
-                                        })];
-                                case 2:
-                                    abandonedAssignment = _b.sent();
-                                    if (!abandonedAssignment) return [3 /*break*/, 4];
-                                    return [4 /*yield*/, tx.assignment.update({
-                                            where: { id: abandonedAssignment.id },
-                                            data: {
-                                                abandoned: false,
-                                                completed: false,
-                                            },
-                                        })];
-                                case 3:
-                                    _b.sent();
-                                    newLatinCounter = abandonedAssignment.latinCounter;
-                                    assignmentId = abandonedAssignment.id;
-                                    return [3 /*break*/, 7];
-                                case 4: return [4 /*yield*/, tx.assignment.aggregate({
-                                        where: { group: group_id_1 },
-                                        _max: {
-                                            latinCounter: true,
-                                        },
-                                    })];
-                                case 5:
-                                    maxLatinCounter = _b.sent();
-                                    lastLatinCounter = (_a = maxLatinCounter._max.latinCounter) !== null && _a !== void 0 ? _a : -1;
-                                    newLatinCounter = lastLatinCounter + 1;
-                                    return [4 /*yield*/, tx.assignment.create({
-                                            data: {
-                                                completed: false,
-                                                abandoned: false,
-                                                latinCounter: newLatinCounter,
-                                                group: group_id_1,
-                                            },
-                                        })];
-                                case 6:
-                                    newAssignment = _b.sent();
-                                    assignmentId = newAssignment.id;
-                                    _b.label = 7;
-                                case 7:
-                                    adjustedQuestionArray = questionArray.map(function (val) { return ((val + newLatinCounter - 1) % question_size_1) + 1; });
-                                    adjustedSyntaxArray = syntaxArray.map(function (val) { return ((((val - newLatinCounter - 1) % syntax_size_1) + syntax_size_1) % syntax_size_1) + 1; });
-                                    return [2 /*return*/, {
-                                            adjustedQuestionArray: adjustedQuestionArray,
-                                            adjustedSyntaxArray: adjustedSyntaxArray,
-                                            assignmentId: assignmentId,
-                                        }];
-                            }
-                        });
-                    }); })];
-            case 1:
-                _a = _b.sent(), adjustedQuestionArray = _a.adjustedQuestionArray, adjustedSyntaxArray = _a.adjustedSyntaxArray, assignmentId = _a.assignmentId;
-                res.json({
-                    questionArray: adjustedQuestionArray,
-                    syntaxArray: adjustedSyntaxArray,
-                    assignmentId: assignmentId,
-                });
-                return [3 /*break*/, 3];
-            case 2:
-                err_3 = _b.sent();
-                console.error('❌ Error in getNextGroup:', err_3);
-                next(err_3);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); };
-exports.getNextGroup = getNextGroup;
 /**
  * GET /:id
  * Retrieve a single Experiment_data entry by its ID.
  */
 var getExperimentEntryById = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, entry, err_4;
+    var id, entry, err_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -306,9 +200,9 @@ var getExperimentEntryById = function (req, res, next) { return __awaiter(void 0
                 res.json(entry);
                 return [3 /*break*/, 3];
             case 2:
-                err_4 = _a.sent();
-                console.error('❌ Error in getExperimentEntryById:', err_4);
-                next(err_4);
+                err_2 = _a.sent();
+                console.error('❌ Error in getExperimentEntryById:', err_2);
+                next(err_2);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
@@ -320,7 +214,7 @@ exports.getExperimentEntryById = getExperimentEntryById;
  * Download CSV of all Experiment_data results.
  */
 var getAllExperimentEntriesCsv = function (_req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, csv, err_5;
+    var data, csv, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -336,14 +230,13 @@ var getAllExperimentEntriesCsv = function (_req, res, next) { return __awaiter(v
                     .send(csv);
                 return [3 /*break*/, 3];
             case 2:
-                err_5 = _a.sent();
-                console.error('❌ Error in getAllExperimentEntriesCsv:', err_5);
-                next(err_5);
+                err_3 = _a.sent();
+                console.error('❌ Error in getAllExperimentEntriesCsv:', err_3);
+                next(err_3);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
     });
 }); };
 exports.getAllExperimentEntriesCsv = getAllExperimentEntriesCsv;
-var templateObject_1;
 //# sourceMappingURL=kushaController.js.map
