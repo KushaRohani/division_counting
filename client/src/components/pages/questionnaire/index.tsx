@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SurveyData } from '../../../App';
 
 export interface QuestionnaireData {
   easier_form: string;
@@ -16,14 +17,24 @@ interface QuestionnairePageProps {
   setPage: () => void;
   questionnaireData: QuestionnaireData;
   setQuestionnaireData: (data: QuestionnaireData) => void;
+  surveyData: SurveyData;
+  setSurveyData: (data: SurveyData) => void;
 }
 
 const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
   setPage,
   questionnaireData,
   setQuestionnaireData,
+  surveyData,
+  setSurveyData,
 }) => {
   const [form, setForm] = useState<QuestionnaireData>(questionnaireData);
+  const [name, setName] = useState(surveyData.name);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+  useEffect(() => {
+    setName(surveyData.name); // Sync name when surveyData changes
+  }, [surveyData]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -44,9 +55,16 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
     }
   };
 
+  const isValid = name.trim() !== '';
+
   const handleNext = () => {
-    setQuestionnaireData(form);
-    setPage();
+    if (isValid) {
+      setQuestionnaireData(form);
+      setSurveyData({ ...surveyData, name: name.trim() });
+      setPage();
+    } else {
+      setAttemptedSubmit(true);
+    }
   };
 
   const getFieldClass = (): string => {
@@ -62,6 +80,22 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
 
       {/* Form */}
       <form className="w-full max-w-2xl text-white space-y-6">
+        {/* Name field at the beginning */}
+        <div>
+          <label className="block mb-2 text-lg">
+            Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${
+              attemptedSubmit && name.trim() === '' ? 'border-red-500' : 'border-gray-600'
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          />
+        </div>
+
         {/* Question 1: Which form of division felt easier to work with? */}
         <div>
           <label className="block mb-2 text-lg">
@@ -288,7 +322,11 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
       {/* Next Button */}
       <button
         onClick={handleNext}
-        className="mt-10 py-2 px-6 font-semibold rounded shadow-md transition-all bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+        className={`mt-10 py-2 px-6 font-semibold rounded shadow-md transition-all ${
+          isValid
+            ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+            : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+        }`}
       >
         Continue
       </button>

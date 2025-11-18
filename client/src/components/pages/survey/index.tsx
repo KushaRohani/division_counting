@@ -18,7 +18,6 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, setUnder18Page, survey
   };
 
   const isValid =
-    form.name.trim() !== '' &&
     form.age.trim() !== '' &&
     form.sex.trim() !== '';
 
@@ -74,19 +73,6 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, setUnder18Page, survey
 
       {/* Form */}
       <form className="w-full max-w-md text-white space-y-4">
-        <div>
-          <label className="block mb-1">
-            Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('name')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-        </div>
-
         <div>
           <label className="block mb-1">
             Age <span className="text-red-500">*</span>

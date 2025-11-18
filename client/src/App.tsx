@@ -149,6 +149,10 @@ function App() {
             setQuestionnaireData={data => {
               questionnaireDataRef.current = data
             }}
+            surveyData={surveyDataRef.current}
+            setSurveyData={data => {
+              surveyDataRef.current = data
+            }}
           />
         )
 
