@@ -14,8 +14,6 @@ export interface ExperimentPageProps {
   durationsRef: React.MutableRefObject<number[]>
   accuracyRef: React.MutableRefObject<boolean[]>
   questions: QuestionItem[]
-  partNumber: number
-  totalParts: number
   setSurveyMetrics: (metrics: {
     ids: string[]
     accuracyArray: boolean[]
@@ -32,8 +30,6 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
   durationsRef,
   accuracyRef,
   questions,
-  partNumber,
-  totalParts,
   setSurveyMetrics,
 }) => {
   const [started, setStarted] = useState(false)

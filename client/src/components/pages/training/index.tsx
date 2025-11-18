@@ -8,15 +8,11 @@ import type { QuestionItem } from '../../ultilities/questionsTemplates'
 interface TrainingPageProps {
   setPage: () => void
   trainingQuestions: QuestionItem[]
-  partNumber: number
-  totalParts: number
 }
 
 const TrainingPage: React.FC<TrainingPageProps> = ({
   setPage,
   trainingQuestions,
-  partNumber,
-  totalParts,
 }) => {
   // Remove first 5 questions
   const questions = trainingQuestions.slice(5)

@@ -90,16 +90,11 @@ const Treatment: React.FC<TreatmentProps> = ({
     q.id.startsWith(prefix)
   )
 
-  const partNumber = stepIndex + 1
-  const totalParts = orderedSteps.length
-
   if (phase === 'train') {
     return (
       <TrainingPage
         setPage={handleNext}
         trainingQuestions={trainingQuestions}
-        partNumber={partNumber}
-        totalParts={totalParts}
       />
     )
   }
@@ -114,8 +109,6 @@ const Treatment: React.FC<TreatmentProps> = ({
       durationsRef={durationsRef}
       accuracyRef={accuracyRef}
       questions={current.questions}
-      partNumber={partNumber}
-      totalParts={totalParts}
       setSurveyMetrics={({ ids, accuracyArray, durations, totalTime }) => {
         const prev = surveyDataRef.current
         surveyDataRef.current = {

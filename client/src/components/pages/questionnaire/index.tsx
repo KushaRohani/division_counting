@@ -24,7 +24,6 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
   setQuestionnaireData,
 }) => {
   const [form, setForm] = useState<QuestionnaireData>(questionnaireData);
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -50,13 +49,8 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
     setPage();
   };
 
-  const getFieldClass = (field: keyof QuestionnaireData): string => {
-    const value = form[field];
-    const isBlank =
-      typeof value === 'string'
-        ? value.trim().length === 0
-        : value === null || value === undefined;
-    return attemptedSubmit && isBlank ? 'border-red-500' : 'border-gray-600';
+  const getFieldClass = (): string => {
+    return 'border-gray-600';
   };
 
   return (
@@ -77,7 +71,7 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
             name="easier_form"
             value={form.easier_form}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('easier_form')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass()} focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
             <option value="">Select an option</option>
             <option value="slash">Slash (/)</option>
@@ -106,7 +100,7 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
               value={form.easier_form_thoughts}
               onChange={handleChange}
               rows={4}
-              className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('easier_form_thoughts')} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
+              className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass()} focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none`}
               placeholder="Enter your thoughts here..."
             />
           </div>
@@ -184,7 +178,7 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
             name="difficulty_rating"
             value={form.difficulty_rating ?? ''}
             onChange={handleChange}
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('difficulty_rating')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass()} focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
             <option value="">Select a rating</option>
             <option value="1">1 - Very easy</option>
@@ -239,7 +233,7 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
             value={form.preferred_language}
             onChange={handleChange}
             placeholder="e.g., Python, JavaScript, Java, etc."
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('preferred_language')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass()} focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
 
@@ -254,7 +248,7 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
             value={form.highest_math_course}
             onChange={handleChange}
             placeholder="e.g., Calculus, Linear Algebra, etc."
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('highest_math_course')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass()} focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
 
