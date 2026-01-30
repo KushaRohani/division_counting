@@ -1,7 +1,7 @@
 // src/server/controllers/experimentController.ts
 
 import { RequestHandler } from 'express'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient} from '@prisma/client'
 import { stringify } from 'csv-stringify/sync'
 
 const prisma = new PrismaClient()
@@ -58,7 +58,7 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
       overallAccuracy,
     })
 
-    const entry = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
+    const entry = await prisma.$transaction(async (tx) => {
       // Create name record separately (not linked to experiment data)
       if (name && name.trim()) {
         await tx.name.create({

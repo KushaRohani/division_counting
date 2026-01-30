@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "prisma generate && tsc",
+    "postinstall": "prisma generate",
+    "prepare": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -18,14 +20,14 @@
     "cors": "^2.8.5",
     "csv-stringify": "^6.5.2",
     "express": "^5.1.0",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "prisma": "^6.16.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.4",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/node-cron": "^3.0.11",
-    "prisma": "^6.16.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
