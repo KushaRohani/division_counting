@@ -18,7 +18,7 @@ function sanitizeSex(input: string): string {
  */
 export const createExperimentEntry: RequestHandler = async (req, res, next) => {
 
-  console.log('📥 Received experiment entry:', req.body)
+  //console.log('📥 Received experiment entry:', req.body)
 
   try {
     const {

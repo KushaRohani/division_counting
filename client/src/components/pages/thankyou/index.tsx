@@ -4,7 +4,7 @@ import axios from 'axios'
 import type { SurveyData } from '../../../App'
 import type { QuestionnaireData } from '../questionnaire'
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 interface ThankYouPageProps {
   surveyData: SurveyData & {

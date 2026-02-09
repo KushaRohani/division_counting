@@ -8,8 +8,8 @@ import {
 const router = Router();
 
 // Experiment routes
-router.get('/', getAllExperimentEntriesCsv);
+//router.get('/', getAllExperimentEntriesCsv);
 router.post('/', createExperimentEntry);
-router.get('/:id', getExperimentEntryById);
+//router.get('/:id', getExperimentEntryById);
 
 export default router;

@@ -57,10 +57,7 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                console.log('📥 Received experiment entry:', req.body);
-                _b.label = 1;
-            case 1:
-                _b.trys.push([1, 3, , 4]);
+                _b.trys.push([0, 2, , 3]);
                 _a = req.body, name_1 = _a.name, age = _a.age, sexInput = _a.sex, ids_1 = _a.ids, task_accuracy_1 = _a.task_accuracy, durations_1 = _a.durations, totalTime_1 = _a.totalTime, overallAccuracy_1 = _a.overallAccuracy, easier_form_1 = _a.easier_form, easier_form_thoughts_1 = _a.easier_form_thoughts, used_calculator_1 = _a.used_calculator, used_scratch_paper_1 = _a.used_scratch_paper, difficulty_rating_1 = _a.difficulty_rating, programming_experience_1 = _a.programming_experience, preferred_language_1 = _a.preferred_language, highest_math_course_1 = _a.highest_math_course, used_vertical_division_1 = _a.used_vertical_division;
                 parsedAge = parseInt(age, 10);
                 safeAge_1 = isNaN(parsedAge) ? 0 : parsedAge;
@@ -159,16 +156,16 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                             }
                         });
                     }); })];
-            case 2:
+            case 1:
                 entry = _b.sent();
                 res.status(201).json(entry);
-                return [3 /*break*/, 4];
-            case 3:
+                return [3 /*break*/, 3];
+            case 2:
                 err_1 = _b.sent();
                 console.error('❌ Error in createExperimentEntry:', err_1);
                 next(err_1);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); };
