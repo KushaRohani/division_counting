@@ -13,6 +13,49 @@ function sanitizeSex(input: string): string {
 }
 
 /**
+ * POST /name
+ * Handles saving name information for extra credit (separate from experiment data).
+ * Only saves if all four fields (first_name, last_name, class, section) are provided.
+ */
+export const createNameEntry: RequestHandler = async (req, res, next) => {
+  try {
+    const {
+      first_name,
+      last_name,
+      class: className,
+      section,
+    } = req.body as Record<string, any>
+
+    // Only save if all optional fields are provided
+    const hasAllFields = 
+      first_name && first_name.trim() &&
+      last_name && last_name.trim() &&
+      className && className.trim() &&
+      section && section.trim()
+
+    if (!hasAllFields) {
+      // If not all fields are provided, just return success without saving
+      res.status(200).json({ message: 'Name entry skipped - not all fields provided' })
+      return
+    }
+
+    const nameEntry = await prisma.name.create({
+      data: {
+        first_name: first_name.trim(),
+        last_name: last_name.trim(),
+        class: className.trim(),
+        section: section.trim(),
+      },
+    })
+
+    res.status(201).json(nameEntry)
+  } catch (err) {
+    console.error('❌ Error in createNameEntry:', err)
+    next(err)
+  }
+}
+
+/**
  * POST /
  * Handles survey + experiment submission for Experiment_data.
  */
@@ -25,21 +68,29 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
       name,
       age,
       sex: sexInput,
+      years_programming,
+      school_year,
+      study_major,
+      last_math_class_years,
+      preferred_language,
+      highest_math_course,
+      used_vertical_division,
       ids,
       task_accuracy,
       durations,
       totalTime,
       overallAccuracy,
+      // Optional name fields for extra credit (already saved separately)
+      first_name,
+      last_name,
+      class: className,
+      section,
       // Questionnaire data
       easier_form,
       easier_form_thoughts,
       used_calculator,
       used_scratch_paper,
       difficulty_rating,
-      programming_experience,
-      preferred_language,
-      highest_math_course,
-      used_vertical_division,
     } = req.body as Record<string, any>
 
     const parsedAge = parseInt(age, 10)
@@ -59,20 +110,21 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
     })
 
     const entry = await prisma.$transaction(async (tx) => {
-      // Create name record separately (not linked to experiment data)
-      if (name && name.trim()) {
-        await tx.name.create({
-          data: {
-            name: name.trim(),
-          },
-        })
-      }
+      // Note: Name entries are now saved separately when the user clicks Next on the survey page
+      // This ensures the name data is saved early and is not linked to experiment results
 
       // create the main experiment record (without name_id)
       const created = await tx.experiment_data.create({
         data: {
           age: safeAge,
           sex: sexString,
+          years_programming: years_programming || '',
+          school_year: school_year || '',
+          study_major: study_major || '',
+          last_math_class_years: last_math_class_years || '',
+          preferred_language: preferred_language || '',
+          highest_math_course: highest_math_course || '',
+          used_vertical_division: used_vertical_division || '',
           accuracy: overallAccuracy ?? 0,
           task_accuracy,
           task_ids: ids,
@@ -99,11 +151,7 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
         easier_form_thoughts !== undefined ||
         used_calculator !== undefined ||
         used_scratch_paper !== undefined ||
-        difficulty_rating !== undefined ||
-        programming_experience !== undefined ||
-        preferred_language !== undefined ||
-        highest_math_course !== undefined ||
-        used_vertical_division !== undefined
+        difficulty_rating !== undefined
       ) {
         await tx.questionnaire.create({
           data: {
@@ -121,18 +169,6 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
             difficulty_rating:
               difficulty_rating !== undefined
                 ? parseInt(difficulty_rating, 10) || null
-                : null,
-            programming_experience:
-              programming_experience !== undefined
-                ? programming_experience === true ||
-                  programming_experience === 'true'
-                : null,
-            preferred_language: preferred_language || null,
-            highest_math_course: highest_math_course || null,
-            used_vertical_division:
-              used_vertical_division !== undefined
-                ? used_vertical_division === true ||
-                  used_vertical_division === 'true'
                 : null,
           },
         })

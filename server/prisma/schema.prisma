@@ -14,22 +14,32 @@ datasource db {
 // Names table for storing participant names (separate from experiment data)
 model Name {
   id        Int      @id @default(autoincrement())
-  name      String
+  first_name String
+  last_name  String
+  class      String
+  section    String
   created_at DateTime @default(now())
 }
 
 // Main experiment data model
 model Experiment_data {
-  id               Int                  @id @default(autoincrement())
-  age              Int
-  sex              String
-  accuracy         Float
-  task_accuracy    Boolean[]
-  task_ids         String[]
-  total_time       Int                  
-  per_task_time    Int[]
-  created_at       DateTime             @default(now())
-  questionnaire    Questionnaire?
+  id                    Int                  @id @default(autoincrement())
+  age                   Int
+  sex                   String
+  years_programming     String
+  school_year           String
+  study_major           String
+  last_math_class_years String
+  preferred_language     String
+  highest_math_course   String
+  used_vertical_division String
+  accuracy              Float
+  task_accuracy         Boolean[]
+  task_ids              String[]
+  total_time            Int                  
+  per_task_time         Int[]
+  created_at            DateTime             @default(now())
+  questionnaire         Questionnaire?
 }
 
 model Experiment_per_question {
@@ -49,10 +59,6 @@ model Questionnaire {
   used_calculator            Boolean?             // Did you use a calculator?
   used_scratch_paper         Boolean?             // Did you use scratch paper?
   difficulty_rating          Int?                 // How difficult from 1-7 (1-Very easy to 7-Very hard)
-  programming_experience     Boolean?             // Do you have experience programming?
-  preferred_language         String?              // What's your preferred programming language, if any?
-  highest_math_course        String?              // What's the highest level math course you've taken?
-  used_vertical_division     Boolean?             // Have you used a program or language that represents division vertically?
   created_at                 DateTime             @default(now())
   
   experiment_data            Experiment_data     @relation(fields: [experiment_data_id], references: [id], onDelete: Cascade)

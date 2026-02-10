@@ -33,16 +33,13 @@ const ThankYouPage: React.FC<ThankYouPageProps> = ({
         await axios.post(`${apiUrl}/experiment`, {
           ...rest,
           task_accuracy: test_accuracy,
+          // Note: Name fields are now saved separately when user clicks Next on survey page
           // Include questionnaire data
           easier_form: questionnaireData.easier_form || undefined,
           easier_form_thoughts: questionnaireData.easier_form_thoughts || undefined,
           used_calculator: questionnaireData.used_calculator,
           used_scratch_paper: questionnaireData.used_scratch_paper,
           difficulty_rating: questionnaireData.difficulty_rating,
-          programming_experience: questionnaireData.programming_experience,
-          preferred_language: questionnaireData.preferred_language || undefined,
-          highest_math_course: questionnaireData.highest_math_course || undefined,
-          used_vertical_division: questionnaireData.used_vertical_division,
         })
       } catch (error) {
         console.error('Submit error', error)

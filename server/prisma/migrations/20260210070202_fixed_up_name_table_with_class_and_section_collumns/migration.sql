@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "public"."Name" ALTER COLUMN "first_name" DROP DEFAULT,
+ALTER COLUMN "last_name" DROP DEFAULT,
+ALTER COLUMN "class" DROP DEFAULT,
+ALTER COLUMN "section" DROP DEFAULT;

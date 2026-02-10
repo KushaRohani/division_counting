@@ -7,10 +7,6 @@ export interface QuestionnaireData {
   used_calculator: boolean | null;
   used_scratch_paper: boolean | null;
   difficulty_rating: number | null;
-  programming_experience: boolean | null;
-  preferred_language: string;
-  highest_math_course: string;
-  used_vertical_division: boolean | null;
 }
 
 interface QuestionnairePageProps {
@@ -29,12 +25,7 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
   setSurveyData,
 }) => {
   const [form, setForm] = useState<QuestionnaireData>(questionnaireData);
-  const [name, setName] = useState(surveyData.name);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
-
-  useEffect(() => {
-    setName(surveyData.name); // Sync name when surveyData changes
-  }, [surveyData]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -55,16 +46,11 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
     }
   };
 
-  const isValid = name.trim() !== '';
+  const isValid = true; // All required fields are now in the pre-survey
 
   const handleNext = () => {
-    if (isValid) {
-      setQuestionnaireData(form);
-      setSurveyData({ ...surveyData, name: name.trim() });
-      setPage();
-    } else {
-      setAttemptedSubmit(true);
-    }
+    setQuestionnaireData(form);
+    setPage();
   };
 
   const getFieldClass = (): string => {
@@ -80,22 +66,6 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
 
       {/* Form */}
       <form className="w-full max-w-2xl text-white space-y-6">
-        {/* Name field at the beginning */}
-        <div>
-          <label className="block mb-2 text-lg">
-            Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${
-              attemptedSubmit && name.trim() === '' ? 'border-red-500' : 'border-gray-600'
-            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-        </div>
-
         {/* Question 1: Which form of division felt easier to work with? */}
         <div>
           <label className="block mb-2 text-lg">
@@ -225,98 +195,6 @@ const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
           </select>
         </div>
 
-        {/* Question 6: Do you have experience programming? */}
-        <div>
-          <label className="block mb-2 text-lg">
-            Do you have experience programming?
-          </label>
-          <div className="flex gap-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="programming_experience"
-                value="true"
-                checked={form.programming_experience === true}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              Yes
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="programming_experience"
-                value="false"
-                checked={form.programming_experience === false}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              No
-            </label>
-          </div>
-        </div>
-
-        {/* Question 7: Preferred programming language */}
-        <div>
-          <label className="block mb-2 text-lg">
-            What's your preferred programming language, if any?
-          </label>
-          <input
-            type="text"
-            name="preferred_language"
-            value={form.preferred_language}
-            onChange={handleChange}
-            placeholder="e.g., Python, JavaScript, Java, etc."
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass()} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-        </div>
-
-        {/* Question 8: Highest level math course */}
-        <div>
-          <label className="block mb-2 text-lg">
-            What's the highest level math course you've taken?
-          </label>
-          <input
-            type="text"
-            name="highest_math_course"
-            value={form.highest_math_course}
-            onChange={handleChange}
-            placeholder="e.g., Calculus, Linear Algebra, etc."
-            className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass()} focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-        </div>
-
-        {/* Question 9: Used vertical division programs */}
-        <div>
-          <label className="block mb-2 text-lg">
-            Have you used a program or language that represents division
-            vertically, such as Desmos or Mathematica?
-          </label>
-          <div className="flex gap-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="used_vertical_division"
-                value="true"
-                checked={form.used_vertical_division === true}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              Yes
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="used_vertical_division"
-                value="false"
-                checked={form.used_vertical_division === false}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              No
-            </label>
-          </div>
-        </div>
       </form>
 
       {/* Next Button */}

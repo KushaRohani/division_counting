@@ -29,6 +29,17 @@ export interface SurveyData {
   name: string
   age: string
   sex: string
+  years_programming: string
+  school_year: string
+  study_major: string
+  last_math_class_years: string
+  preferred_language: string
+  highest_math_course: string
+  used_vertical_division: string
+  first_name?: string
+  last_name?: string
+  class?: string
+  section?: string
   ids?: string[]
   test_accuracy?: boolean[]
   durations?: number[]
@@ -43,6 +54,13 @@ function App() {
     name: '',
     age: '',
     sex: '',
+    years_programming: '',
+    school_year: '',
+    study_major: '',
+    last_math_class_years: '',
+    preferred_language: '',
+    highest_math_course: '',
+    used_vertical_division: '',
   })
   const experimentDataRef = useRef<string[]>([])
   const idsRef = useRef<string[]>([])
@@ -54,10 +72,6 @@ function App() {
     used_calculator: null,
     used_scratch_paper: null,
     difficulty_rating: null,
-    programming_experience: null,
-    preferred_language: '',
-    highest_math_course: '',
-    used_vertical_division: null,
   })
 
   const [treatments, setTreatments] = useState<TreatmentStep[]>([])

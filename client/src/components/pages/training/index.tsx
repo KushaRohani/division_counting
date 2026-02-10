@@ -8,11 +8,15 @@ import type { QuestionItem } from '../../ultilities/questionsTemplates'
 interface TrainingPageProps {
   setPage: () => void
   trainingQuestions: QuestionItem[]
+  partNumber: number
+  totalParts: number
 }
 
 const TrainingPage: React.FC<TrainingPageProps> = ({
   setPage,
   trainingQuestions,
+  partNumber,
+  totalParts,
 }) => {
   // Remove first 5 questions
   const questions = trainingQuestions.slice(5)
@@ -75,6 +79,11 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10 text-white">
+      <div className="mb-4 px-4 py-2 bg-blue-600/20 border border-blue-500/50 rounded-lg">
+        <p className="text-blue-300 font-semibold text-lg">
+          Part {partNumber} of {totalParts}
+        </p>
+      </div>
       <h1 className="text-4xl font-extrabold mb-4">Practice</h1>
       
       {/* Progress Bar */}

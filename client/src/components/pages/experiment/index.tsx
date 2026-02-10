@@ -14,6 +14,8 @@ export interface ExperimentPageProps {
   durationsRef: React.MutableRefObject<number[]>
   accuracyRef: React.MutableRefObject<boolean[]>
   questions: QuestionItem[]
+  partNumber: number
+  totalParts: number
   setSurveyMetrics: (metrics: {
     ids: string[]
     accuracyArray: boolean[]
@@ -30,6 +32,8 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
   durationsRef,
   accuracyRef,
   questions,
+  partNumber,
+  totalParts,
   setSurveyMetrics,
 }) => {
   const [started, setStarted] = useState(false)
@@ -136,6 +140,11 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
         <h1 className="text-4xl font-extrabold text-white mb-4">
           Ready for the Experiment? 🚀
         </h1>
+        <div className="mb-4 px-4 py-2 bg-blue-600/20 border border-blue-500/50 rounded-lg">
+          <p className="text-blue-300 font-semibold text-lg">
+            Part {partNumber} of {totalParts}
+          </p>
+        </div>
         <button
           onClick={handleStart}
           className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded shadow-md"
@@ -150,6 +159,11 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full px-6 py-10">
+      <div className="mb-4 px-4 py-2 bg-blue-600/20 border border-blue-500/50 rounded-lg">
+        <p className="text-blue-300 font-semibold text-lg">
+          Part {partNumber} of {totalParts}
+        </p>
+      </div>
       <h1 className="text-4xl font-extrabold mb-4 text-white">Experiment</h1>
       
       {/* Progress Bar */}

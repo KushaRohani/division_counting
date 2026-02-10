@@ -7,7 +7,7 @@ import type { QuestionItem } from '../../ultilities/questionsTemplates'
 import type { SurveyData } from '../../../App'
 
 export interface TreatmentStep {
-  ExplainComponent: React.FC<{ onNext: () => void }>
+  ExplainComponent: React.FC<{ onNext: () => void; partNumber: number; totalParts: number }>
   questions: QuestionItem[]
 }
 
@@ -79,9 +79,11 @@ const Treatment: React.FC<TreatmentProps> = ({
   }
 
   const current = orderedSteps[stepIndex]
+  const currentPart = stepIndex + 1
+  const totalParts = orderedSteps.length
 
   if (phase === 'explain') {
-    return <current.ExplainComponent onNext={handleNext} />
+    return <current.ExplainComponent onNext={handleNext} partNumber={currentPart} totalParts={totalParts} />
   }
 
   // pick only the training items matching this group's prefix
@@ -95,6 +97,8 @@ const Treatment: React.FC<TreatmentProps> = ({
       <TrainingPage
         setPage={handleNext}
         trainingQuestions={trainingQuestions}
+        partNumber={currentPart}
+        totalParts={totalParts}
       />
     )
   }
@@ -109,6 +113,8 @@ const Treatment: React.FC<TreatmentProps> = ({
       durationsRef={durationsRef}
       accuracyRef={accuracyRef}
       questions={current.questions}
+      partNumber={currentPart}
+      totalParts={totalParts}
       setSurveyMetrics={({ ids, accuracyArray, durations, totalTime }) => {
         const prev = surveyDataRef.current
         surveyDataRef.current = {

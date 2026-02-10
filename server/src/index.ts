@@ -7,7 +7,7 @@ import { errorHandler } from './middlewares/errorHandler'
 
 const app = express()
 
-//app.use(cors())
+app.use(cors())
 app.use(express.json())
 
 // Static file serving removed - PDFs are now served from client's public folder
