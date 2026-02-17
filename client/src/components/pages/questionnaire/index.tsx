@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SurveyData } from '../../../App';
 
 export interface QuestionnaireData {
@@ -13,19 +13,16 @@ interface QuestionnairePageProps {
   setPage: () => void;
   questionnaireData: QuestionnaireData;
   setQuestionnaireData: (data: QuestionnaireData) => void;
-  surveyData: SurveyData;
-  setSurveyData: (data: SurveyData) => void;
+  surveyData?: SurveyData;
+  setSurveyData?: (data: SurveyData) => void;
 }
 
 const QuestionnairePage: React.FC<QuestionnairePageProps> = ({
   setPage,
   questionnaireData,
   setQuestionnaireData,
-  surveyData,
-  setSurveyData,
 }) => {
   const [form, setForm] = useState<QuestionnaireData>(questionnaireData);
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
