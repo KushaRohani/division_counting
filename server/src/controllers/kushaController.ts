@@ -6,10 +6,9 @@ import { stringify } from 'csv-stringify/sync'
 
 const prisma = new PrismaClient()
 
-function sanitizeSex(input: string): string {
-  // Trim whitespace and return the input as-is
-  // No validation needed since we're accepting any text input
-  return input.trim()
+function sanitizeSex(input: unknown): string {
+  if (input == null) return ''
+  return String(input).trim()
 }
 
 /**
@@ -98,13 +97,18 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
 
     const sexString = sanitizeSex(sexInput)
 
+    // Normalize arrays so missing or invalid payloads don't throw
+    const idsList = Array.isArray(ids) ? ids : []
+    const taskAccuracyList = Array.isArray(task_accuracy) ? task_accuracy : []
+    const durationsList = Array.isArray(durations) ? durations : []
+
     console.log('📥 Creating experiment entry with:', {
       name,
       safeAge,
       sexString,
-      ids,
-      task_accuracy,
-      durations,
+      ids: idsList,
+      task_accuracy: taskAccuracyList,
+      durations: durationsList,
       totalTime,
       overallAccuracy,
     })
@@ -126,24 +130,31 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
           highest_math_course: highest_math_course || '',
           used_vertical_division: used_vertical_division || '',
           accuracy: overallAccuracy ?? 0,
-          task_accuracy,
-          task_ids: ids,
+          task_accuracy: taskAccuracyList,
+          task_ids: idsList,
           total_time: totalTime ?? 0,
-          per_task_time: durations,
+          per_task_time: durationsList,
         },
       })
 
-      // insert per-question rows
-      const perQuestionData = ids.map((questionId: string, index: number) => ({
-        question_id: parseInt(questionId, 10),
-        user_id: created.id,
-        result: task_accuracy[index],
-        time: durations[index],
-      }))
+      // insert per-question rows (only valid question_id; coerce result/time to avoid Prisma errors)
+      const perQuestionData = idsList
+        .map((questionId: string, index: number) => {
+          const questionIdNum = parseInt(String(questionId), 10)
+          return {
+            question_id: questionIdNum,
+            user_id: created.id,
+            result: Boolean(taskAccuracyList[index]),
+            time: Math.floor(Number(durationsList[index])) || 0,
+          }
+        })
+        .filter((row) => !Number.isNaN(row.question_id))
 
-      await tx.experiment_per_question.createMany({
-        data: perQuestionData,
-      })
+      if (perQuestionData.length > 0) {
+        await tx.experiment_per_question.createMany({
+          data: perQuestionData,
+        })
+      }
 
       // Create questionnaire entry if questionnaire data is provided
       if (
@@ -153,11 +164,21 @@ export const createExperimentEntry: RequestHandler = async (req, res, next) => {
         used_scratch_paper !== undefined ||
         difficulty_rating !== undefined
       ) {
+        // Coerce questionnaire text fields to string or null (Prisma expects String?)
+        const safeEasierForm =
+          easier_form != null && typeof easier_form === 'string'
+            ? easier_form.trim() || null
+            : null
+        const safeEasierFormThoughts =
+          easier_form_thoughts != null && typeof easier_form_thoughts === 'string'
+            ? easier_form_thoughts.trim() || null
+            : null
+
         await tx.questionnaire.create({
           data: {
             experiment_data_id: created.id,
-            easier_form: easier_form || null,
-            easier_form_thoughts: easier_form_thoughts || null,
+            easier_form: safeEasierForm,
+            easier_form_thoughts: safeEasierFormThoughts,
             used_calculator:
               used_calculator !== undefined
                 ? used_calculator === true || used_calculator === 'true'
