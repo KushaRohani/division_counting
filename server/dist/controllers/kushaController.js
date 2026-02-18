@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllExperimentEntriesCsv = exports.getExperimentEntryById = exports.createExperimentEntry = void 0;
+exports.getAllExperimentEntriesCsv = exports.getExperimentEntryById = exports.createExperimentEntry = exports.createNameEntry = void 0;
 var client_1 = require("@prisma/client");
 var sync_1 = require("csv-stringify/sync");
 var prisma = new client_1.PrismaClient();
@@ -47,18 +47,63 @@ function sanitizeSex(input) {
     return input.trim();
 }
 /**
- * POST /
- * Handles survey + experiment submission for Experiment_data.
+ * POST /name
+ * Handles saving name information for extra credit (separate from experiment data).
+ * Only saves if all four fields (first_name, last_name, class, section) are provided.
  */
-var createExperimentEntry = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name_1, age, sexInput, ids_1, task_accuracy_1, durations_1, totalTime_1, overallAccuracy_1, 
-    // Questionnaire data
-    easier_form_1, easier_form_thoughts_1, used_calculator_1, used_scratch_paper_1, difficulty_rating_1, programming_experience_1, preferred_language_1, highest_math_course_1, used_vertical_division_1, parsedAge, safeAge_1, sexString_1, entry, err_1;
+var createNameEntry = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, first_name, last_name, className, section, hasAllFields, nameEntry, err_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 2, , 3]);
-                _a = req.body, name_1 = _a.name, age = _a.age, sexInput = _a.sex, ids_1 = _a.ids, task_accuracy_1 = _a.task_accuracy, durations_1 = _a.durations, totalTime_1 = _a.totalTime, overallAccuracy_1 = _a.overallAccuracy, easier_form_1 = _a.easier_form, easier_form_thoughts_1 = _a.easier_form_thoughts, used_calculator_1 = _a.used_calculator, used_scratch_paper_1 = _a.used_scratch_paper, difficulty_rating_1 = _a.difficulty_rating, programming_experience_1 = _a.programming_experience, preferred_language_1 = _a.preferred_language, highest_math_course_1 = _a.highest_math_course, used_vertical_division_1 = _a.used_vertical_division;
+                _a = req.body, first_name = _a.first_name, last_name = _a.last_name, className = _a.class, section = _a.section;
+                hasAllFields = first_name && first_name.trim() &&
+                    last_name && last_name.trim() &&
+                    className && className.trim() &&
+                    section && section.trim();
+                if (!hasAllFields) {
+                    // If not all fields are provided, just return success without saving
+                    res.status(200).json({ message: 'Name entry skipped - not all fields provided' });
+                    return [2 /*return*/];
+                }
+                return [4 /*yield*/, prisma.name.create({
+                        data: {
+                            first_name: first_name.trim(),
+                            last_name: last_name.trim(),
+                            class: className.trim(),
+                            section: section.trim(),
+                        },
+                    })];
+            case 1:
+                nameEntry = _b.sent();
+                res.status(201).json(nameEntry);
+                return [3 /*break*/, 3];
+            case 2:
+                err_1 = _b.sent();
+                console.error('❌ Error in createNameEntry:', err_1);
+                next(err_1);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+exports.createNameEntry = createNameEntry;
+/**
+ * POST /
+ * Handles survey + experiment submission for Experiment_data.
+ */
+var createExperimentEntry = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, name_1, age, sexInput, years_programming_1, school_year_1, study_major_1, last_math_class_years_1, preferred_language_1, highest_math_course_1, used_vertical_division_1, ids_1, task_accuracy_1, durations_1, totalTime_1, overallAccuracy_1, 
+    // Optional name fields for extra credit (already saved separately)
+    first_name, last_name, className, section, 
+    // Questionnaire data
+    easier_form_1, easier_form_thoughts_1, used_calculator_1, used_scratch_paper_1, difficulty_rating_1, parsedAge, safeAge_1, sexString_1, entry, err_2;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 2, , 3]);
+                _a = req.body, name_1 = _a.name, age = _a.age, sexInput = _a.sex, years_programming_1 = _a.years_programming, school_year_1 = _a.school_year, study_major_1 = _a.study_major, last_math_class_years_1 = _a.last_math_class_years, preferred_language_1 = _a.preferred_language, highest_math_course_1 = _a.highest_math_course, used_vertical_division_1 = _a.used_vertical_division, ids_1 = _a.ids, task_accuracy_1 = _a.task_accuracy, durations_1 = _a.durations, totalTime_1 = _a.totalTime, overallAccuracy_1 = _a.overallAccuracy, first_name = _a.first_name, last_name = _a.last_name, className = _a.class, section = _a.section, easier_form_1 = _a.easier_form, easier_form_thoughts_1 = _a.easier_form_thoughts, used_calculator_1 = _a.used_calculator, used_scratch_paper_1 = _a.used_scratch_paper, difficulty_rating_1 = _a.difficulty_rating;
                 parsedAge = parseInt(age, 10);
                 safeAge_1 = isNaN(parsedAge) ? 0 : parsedAge;
                 sexString_1 = sanitizeSex(sexInput);
@@ -76,20 +121,17 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                         var created, perQuestionData;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0:
-                                    if (!(name_1 && name_1.trim())) return [3 /*break*/, 2];
-                                    return [4 /*yield*/, tx.name.create({
-                                            data: {
-                                                name: name_1.trim(),
-                                            },
-                                        })];
-                                case 1:
-                                    _a.sent();
-                                    _a.label = 2;
-                                case 2: return [4 /*yield*/, tx.experiment_data.create({
+                                case 0: return [4 /*yield*/, tx.experiment_data.create({
                                         data: {
                                             age: safeAge_1,
                                             sex: sexString_1,
+                                            years_programming: years_programming_1 || '',
+                                            school_year: school_year_1 || '',
+                                            study_major: study_major_1 || '',
+                                            last_math_class_years: last_math_class_years_1 || '',
+                                            preferred_language: preferred_language_1 || '',
+                                            highest_math_course: highest_math_course_1 || '',
+                                            used_vertical_division: used_vertical_division_1 || '',
                                             accuracy: overallAccuracy_1 !== null && overallAccuracy_1 !== void 0 ? overallAccuracy_1 : 0,
                                             task_accuracy: task_accuracy_1,
                                             task_ids: ids_1,
@@ -99,7 +141,7 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                                     })
                                     // insert per-question rows
                                 ];
-                                case 3:
+                                case 1:
                                     created = _a.sent();
                                     perQuestionData = ids_1.map(function (questionId, index) { return ({
                                         question_id: parseInt(questionId, 10),
@@ -112,17 +154,13 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                                         })
                                         // Create questionnaire entry if questionnaire data is provided
                                     ];
-                                case 4:
+                                case 2:
                                     _a.sent();
                                     if (!(easier_form_1 !== undefined ||
                                         easier_form_thoughts_1 !== undefined ||
                                         used_calculator_1 !== undefined ||
                                         used_scratch_paper_1 !== undefined ||
-                                        difficulty_rating_1 !== undefined ||
-                                        programming_experience_1 !== undefined ||
-                                        preferred_language_1 !== undefined ||
-                                        highest_math_course_1 !== undefined ||
-                                        used_vertical_division_1 !== undefined)) return [3 /*break*/, 6];
+                                        difficulty_rating_1 !== undefined)) return [3 /*break*/, 4];
                                     return [4 /*yield*/, tx.questionnaire.create({
                                             data: {
                                                 experiment_data_id: created.id,
@@ -137,22 +175,12 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                                                 difficulty_rating: difficulty_rating_1 !== undefined
                                                     ? parseInt(difficulty_rating_1, 10) || null
                                                     : null,
-                                                programming_experience: programming_experience_1 !== undefined
-                                                    ? programming_experience_1 === true ||
-                                                        programming_experience_1 === 'true'
-                                                    : null,
-                                                preferred_language: preferred_language_1 || null,
-                                                highest_math_course: highest_math_course_1 || null,
-                                                used_vertical_division: used_vertical_division_1 !== undefined
-                                                    ? used_vertical_division_1 === true ||
-                                                        used_vertical_division_1 === 'true'
-                                                    : null,
                                             },
                                         })];
-                                case 5:
+                                case 3:
                                     _a.sent();
-                                    _a.label = 6;
-                                case 6: return [2 /*return*/, created];
+                                    _a.label = 4;
+                                case 4: return [2 /*return*/, created];
                             }
                         });
                     }); })];
@@ -161,9 +189,9 @@ var createExperimentEntry = function (req, res, next) { return __awaiter(void 0,
                 res.status(201).json(entry);
                 return [3 /*break*/, 3];
             case 2:
-                err_1 = _b.sent();
-                console.error('❌ Error in createExperimentEntry:', err_1);
-                next(err_1);
+                err_2 = _b.sent();
+                console.error('❌ Error in createExperimentEntry:', err_2);
+                next(err_2);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
@@ -175,7 +203,7 @@ exports.createExperimentEntry = createExperimentEntry;
  * Retrieve a single Experiment_data entry by its ID.
  */
 var getExperimentEntryById = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, entry, err_2;
+    var id, entry, err_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -197,9 +225,9 @@ var getExperimentEntryById = function (req, res, next) { return __awaiter(void 0
                 res.json(entry);
                 return [3 /*break*/, 3];
             case 2:
-                err_2 = _a.sent();
-                console.error('❌ Error in getExperimentEntryById:', err_2);
-                next(err_2);
+                err_3 = _a.sent();
+                console.error('❌ Error in getExperimentEntryById:', err_3);
+                next(err_3);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
@@ -211,7 +239,7 @@ exports.getExperimentEntryById = getExperimentEntryById;
  * Download CSV of all Experiment_data results.
  */
 var getAllExperimentEntriesCsv = function (_req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var data, csv, err_3;
+    var data, csv, err_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -227,9 +255,9 @@ var getAllExperimentEntriesCsv = function (_req, res, next) { return __awaiter(v
                     .send(csv);
                 return [3 /*break*/, 3];
             case 2:
-                err_3 = _a.sent();
-                console.error('❌ Error in getAllExperimentEntriesCsv:', err_3);
-                next(err_3);
+                err_4 = _a.sent();
+                console.error('❌ Error in getAllExperimentEntriesCsv:', err_4);
+                next(err_4);
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
