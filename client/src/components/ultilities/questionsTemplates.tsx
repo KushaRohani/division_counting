@@ -124,7 +124,11 @@ export function toLatexSimple(input: string): string {
     const R = s.slice(i, Rend).trim()
     s = s.slice(0, Lstart) + `\\frac{${L}}{${R}}` + s.slice(Rend)
   }
-  return s.replace(/\*/g, '\\cdot ')
+  // Use \left( \right) so parentheses scale with content (especially for bar/frac layout)
+  return s
+    .replace(/\*/g, '\\cdot ')
+    .replace(/\(/g, '\\left(')
+    .replace(/\)/g, '\\right)')
 }
 
 export async function fetchQuestionItems(): Promise<QuestionItem[]> {
