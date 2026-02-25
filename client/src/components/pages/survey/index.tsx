@@ -147,13 +147,14 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, setUnder18Page, survey
             <option value="2">2</option>
             <option value="3">3</option>
             <option value="4">4</option>
-            <option value="5+">5+</option>
+            <option value="5">5</option>
+            <option value="6+">6+</option>
           </select>
         </div>
 
         <div>
           <label className="block mb-1">
-            School Year <span className="text-red-500">*</span>
+            Years of post secondary education <span className="text-red-500">*</span>
           </label>
           <select
             name="school_year"
@@ -162,10 +163,13 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, setUnder18Page, survey
             className={`w-full px-4 py-2 rounded bg-gray-800 text-white border ${getFieldClass('school_year')} focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
             <option value="">Select an option</option>
-            <option value="Freshman">Freshman</option>
-            <option value="Sophomore">Sophomore</option>
-            <option value="Junior">Junior</option>
-            <option value="Senior">Senior</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6+">6+</option>
           </select>
         </div>
 
@@ -200,7 +204,7 @@ const SurveyPage: React.FC<SurveyPageProps> = ({ setPage, setUnder18Page, survey
             <option value="3">3 years</option>
             <option value="4">4 years</option>
             <option value="5">5 years</option>
-            <option value="5+">5+ years</option>
+            <option value="6+">6+ years</option>
           </select>
         </div>
 

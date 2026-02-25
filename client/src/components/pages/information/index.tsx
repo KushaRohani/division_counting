@@ -35,7 +35,7 @@ const InfoPage: React.FC<InfoPageProps> = ({ setPage, backPage }) => {
           <strong> 1</strong> through <strong>4</strong> on your keyboard once to select and again to confirm your answer.
         </p>
         <p className="mb-4">
-          Try your best on each question. If you don't know the answer, make your best guess and move on.
+          Try your best on each question. If you don't know the answer, press Space to skip the question.
         </p>
       </div>
 

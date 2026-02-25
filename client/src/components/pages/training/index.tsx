@@ -25,28 +25,53 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
   const [started, setStarted] = useState(false)
   const [idx, setIdx] = useState(0)
   const [typed, setTyped] = useState<string | null>(null)
+  const [skipPending, setSkipPending] = useState(false)
 
   const current = questions[idx]
   const progress = ((idx + 1) / total) * 100
 
   const handleKey = useCallback(
     (token: string) => {
-      if (!['1', '2', '3', '4'].includes(token)) return
       if (!started) return
 
-      // first press: select answer
+      // --- Skip: Space to select, Space again to confirm ---
+      if (token === ' ') {
+        if (skipPending) {
+          setSkipPending(false)
+          if (idx < total - 1) {
+            setIdx(i => i + 1)
+            setTyped(null)
+          } else {
+            setPage()
+          }
+        } else if (typed === null) {
+          setSkipPending(true)
+        } else {
+          setTyped(null)
+          setSkipPending(true)
+        }
+        return
+      }
+
+      // --- Answer: 1–4 to select, same key again to confirm ---
+      if (!['1', '2', '3', '4'].includes(token)) return
+
+      if (skipPending) {
+        setSkipPending(false)
+        setTyped(token)
+        return
+      }
+
       if (typed === null) {
         setTyped(token)
         return
       }
 
-      // if they change selection before confirming
       if (typed !== token) {
         setTyped(token)
         return
       }
 
-      // second press same key: confirm and move to next (no feedback)
       if (idx < total - 1) {
         setIdx(i => i + 1)
         setTyped(null)
@@ -54,11 +79,12 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
         setPage()
       }
     },
-    [started, typed, idx, total, setPage]
+    [started, typed, skipPending, idx, total, setPage]
   )
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ') e.preventDefault()
       handleKey(e.key)
     }
     window.addEventListener('keydown', onKeyDown)
@@ -112,7 +138,11 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
         )}
       </div>
 
-      {typed === null ? (
+      {skipPending ? (
+        <p className="mb-4 text-amber-400">
+          Skip selected. Press <strong>Space</strong> again to confirm.
+        </p>
+      ) : typed === null ? (
         <p className="mb-4 text-gray-400">
           Press <strong>1</strong>–<strong>4</strong> to select an answer, then press it again to submit.
         </p>
@@ -121,6 +151,10 @@ const TrainingPage: React.FC<TrainingPageProps> = ({
           You selected <strong>{typed}</strong>. Press <strong>{typed}</strong> again to confirm.
         </p>
       )}
+
+      <p className="text-gray-500 text-sm mt-2 border-t border-gray-700 pt-3 max-w-xl">
+        To skip this question: press <strong>Space</strong> to choose skip, then <strong>Space</strong> again to confirm.
+      </p>
     </div>
   )
 }

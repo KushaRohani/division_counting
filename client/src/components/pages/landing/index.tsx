@@ -8,8 +8,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ setPage }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12 bg-gray-900">
 
+      <h1 className="text-5xl font-extrabold text-white tracking-tight text-center mb-6 border-b border-gray-700 pb-2">
+        Welcome
+      </h1>
+
       <p className="text-white text-md max-w-lg text-center mb-10 leading-relaxed">
-        Welcome and thank you for your interest in participating in our study.
+        Thank you for your interest in participating in our study.
         In this experiment, you will be calculating mathematical expressions in various formats.
         The experiment should take no longer than 10 minutes of your time.
       </p>

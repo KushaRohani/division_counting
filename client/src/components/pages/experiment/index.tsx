@@ -39,6 +39,7 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
   const [started, setStarted] = useState(false)
   const [current, setCurrent] = useState(0)
   const [typed, setTyped] = useState<string | null>(null)
+  const [skipPending, setSkipPending] = useState(false)
 
   const questionStartRef = useRef<number>(0)
   const total = questions.length
@@ -60,27 +61,66 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
   const handleKey = useCallback(
     (key: string) => {
       if (!started) return
+
+      // --- Skip: Space to select, Space again to confirm ---
+      if (key === ' ') {
+        if (skipPending) {
+          // confirm skip: record with duration -1
+          const now = Date.now()
+          idsRef.current.push(question.id)
+          experimentDataRef.current.push('skip')
+          durationsRef.current.push(-1)
+          accuracyRef.current.push(false)
+          questionStartRef.current = now
+          setSkipPending(false)
+          if (current < total - 1) {
+            setCurrent(c => c + 1)
+          } else {
+            const totalTime = durationsRef.current.reduce((a, b) => a + b, 0)
+            const arrAcc = [...accuracyRef.current]
+            const overall = arrAcc.filter(x => x).length / arrAcc.length
+            setSurveyMetrics({
+              ids: [...idsRef.current],
+              accuracyArray: arrAcc,
+              durations: [...durationsRef.current],
+              totalTime,
+              overallAccuracy: overall,
+            })
+            setPage()
+          }
+        } else if (typed === null) {
+          setSkipPending(true)
+        } else {
+          // Already have an answer selected (e.g. "2") — switch to skip: Space to choose skip, Space again to confirm
+          setTyped(null)
+          setSkipPending(true)
+        }
+        return
+      }
+
+      // --- Answer: 1–4 to select, same key again to confirm ---
       if (!['1', '2', '3', '4'].includes(key)) return
 
-      // first press: select answer
+      if (skipPending) {
+        setSkipPending(false)
+        setTyped(key)
+        return
+      }
+
       if (typed === null) {
         setTyped(key)
         return
       }
 
-      // if they change selection before confirming
       if (typed !== key) {
         setTyped(key)
         return
       }
 
-      // second press same key: confirm
       const now = Date.now()
       idsRef.current.push(question.id)
       experimentDataRef.current.push(key)
       durationsRef.current.push(now - questionStartRef.current)
-
-      // compute correctness
       const answerKey = question.id.slice(2)
       const correctAnswer = parseInt(
         QuestionBank.answers[answerKey as keyof typeof QuestionBank.answers],
@@ -88,18 +128,15 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
       )
       const isCorrect = parseInt(key, 10) === correctAnswer
       accuracyRef.current.push(isCorrect)
-
       questionStartRef.current = now
       setTyped(null)
 
       if (current < total - 1) {
         setCurrent(c => c + 1)
       } else {
-        // finalize metrics
         const totalTime = durationsRef.current.reduce((a, b) => a + b, 0)
         const arrAcc = [...accuracyRef.current]
         const overall = arrAcc.filter(x => x).length / arrAcc.length
-
         setSurveyMetrics({
           ids: [...idsRef.current],
           accuracyArray: arrAcc,
@@ -113,6 +150,7 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
     [
       started,
       typed,
+      skipPending,
       current,
       total,
       idsRef,
@@ -125,9 +163,9 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
     ]
   )
 
-  // listen for key presses
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ') e.preventDefault()
       handleKey(e.key)
     }
     window.addEventListener('keydown', onKeyDown)
@@ -192,7 +230,11 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
         )}
       </div>
 
-      {!typed ? (
+      {skipPending ? (
+        <p className="text-amber-400 mb-4">
+          Skip selected. Press <strong>Space</strong> again to confirm.
+        </p>
+      ) : !typed ? (
         <p className="text-gray-400 mb-4">
           Press <strong>1</strong>–<strong>4</strong> to select an answer, then press it again to submit.
         </p>
@@ -201,6 +243,10 @@ const ExperimentPage: React.FC<ExperimentPageProps> = ({
           You selected <strong>{typed}</strong>. Press <strong>{typed}</strong> again to confirm.
         </p>
       )}
+
+      <p className="text-gray-500 text-sm mt-2 border-t border-gray-700 pt-3 max-w-xl">
+        To skip this question: press <strong>Space</strong> to choose skip, then <strong>Space</strong> again to confirm.
+      </p>
     </div>
   )
 }
